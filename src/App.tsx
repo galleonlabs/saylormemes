@@ -3,7 +3,7 @@ import saylor from './assets/saylor.jpg'
 import btc from './assets/btc.png'
 import { useEffect, useRef, useState } from 'react';
 import { storage } from './main';
-import { ref, listAll, getDownloadURL, getMetadata } from "firebase/storage";
+import { ref, listAll, getDownloadURL, getMetadata, StorageReference } from "firebase/storage";
 import { logEvent } from 'firebase/analytics';
 import { analytics } from './main';
 
@@ -15,33 +15,32 @@ function App() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [videoDimensions, setVideoDimensions] = useState<{ [key: number]: { height: number, width: number } }>({});
 
+  const fetchVideoData = async (itemRef: StorageReference) => {
+    const url = await getDownloadURL(itemRef);
+    const metadata = await getMetadata(itemRef);
+    return { url, title: metadata.customMetadata?.title || 'Untitled' };
+  };
+
   useEffect(() => {
     const fetchVideos = async () => {
-      setIsLoading(true); // Start loading
+      setIsLoading(true); 
       const cachedVideos = sessionStorage.getItem('videos');
       if (cachedVideos) {
         setVideos(JSON.parse(cachedVideos));
-        setIsLoading(false); // End loading
+        setIsLoading(false);
       } else {
         try {
-          const videoList = [];
           const listRef = ref(storage, 'videos/');
-
           const res = await listAll(listRef);
-          for (const itemRef of res.items) {
-            const url = await getDownloadURL(itemRef);
-            const metadata = await getMetadata(itemRef);
-            const title = metadata.customMetadata?.title || 'Untitled';
-            videoList.push({ url, title });
-          }
-
+          const fetchPromises = res.items.map(fetchVideoData);
+          const videoList = await Promise.all(fetchPromises);
           setVideos(videoList);
           sessionStorage.setItem('videos', JSON.stringify(videoList));
         } catch (error) {
           console.error('Error fetching videos:', error);
-          // Handle the error appropriately
+      
         }
-        setIsLoading(false); // End loading
+        setIsLoading(false); 
       }
     };
 
@@ -49,7 +48,31 @@ function App() {
   }, []);
 
   useEffect(() => {
-    setIsPlaying(new Array(videos.length).fill(false)); // Initialize playing state for each video
+    setIsPlaying(new Array(videos.length).fill(false)); 
+
+    const observer = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const video = entry.target as HTMLVideoElement;
+          
+          const source = video.querySelector('source');
+          if (source && source.dataset.src) { 
+            source.src = source.dataset.src;
+            video.load();
+            observer.unobserve(video);
+          }
+        }
+      });
+    }, {
+      rootMargin: '0px',
+      threshold: 0.1
+    });
+
+    videoRefs.current.forEach(video => {
+      if (video) observer.observe(video);
+    });
+
+    return () => observer.disconnect();
   }, [videos]);
 
   const togglePlay = (index: number, title: string) => {
@@ -103,7 +126,6 @@ function App() {
         [index]: { height: video.videoHeight, width: video.videoWidth }
       }));
     }
-    console.log(videoDimensions);
 
   };
 
@@ -145,8 +167,12 @@ function App() {
                   {videos.map((video, index) => (
                     <li key={index} className={enlarged !== -1 ? 'col-span-1 bg-white rounded-lg  mx-auto' : ' border border-btc hover:shadow-sm hover:shadow-btc col-span-1 bg-white rounded-lg  mx-auto shadow'}>
                       <div onClick={() => togglePlay(index, video.title)} className="overflow-hidden flex hover:cursor-pointer items-center justify-center rounded-t-lg" style={{ maxHeight: enlarged === index ? '' : '150px', maxWidth: enlarged === index ? '' : '320px' }}>
-                        <video onLoadedMetadata={() => handleVideoLoad(index)} className="h-full w-full" ref={el => videoRefs.current[index] = el}>
-                          <source src={video.url} type="video/mp4" />
+                        <video
+                          className="h-full w-full"
+                          ref={el => videoRefs.current[index] = el}
+                          onLoadedMetadata={() => handleVideoLoad(index)}
+                        >
+                          <source data-src={video.url} type="video/mp4" />
                           Your browser does not support the video tag.
                         </video>
                       </div>
