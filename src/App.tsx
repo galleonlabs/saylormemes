@@ -14,6 +14,9 @@ function App() {
   const [enlarged, setEnlarged] = useState(-1)
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [videoDimensions, setVideoDimensions] = useState<{ [key: number]: { height: number, width: number } }>({});
+  const [photoDimensions, setPhotoDimensions] = useState<{ [key: number]: { height: number, width: number } }>({});
+  const [currentSelection, setCurrentSelection] = useState('videos');
+  const [photos, setPhotos] = useState<any[]>([]);
 
   const fetchVideoData = async (itemRef: StorageReference) => {
     const url = await getDownloadURL(itemRef);
@@ -21,9 +24,31 @@ function App() {
     return { url, title: metadata.customMetadata?.title || 'Untitled' };
   };
 
+  const fetchPhotos = async () => {
+    setIsLoading(true);
+    const cachedPhotos = sessionStorage.getItem('photos');
+    if (cachedPhotos) {
+      setPhotos(JSON.parse(cachedPhotos));
+      setIsLoading(false);
+    } else {
+      try {
+        const listRef = ref(storage, 'photos/');
+        const res = await listAll(listRef);
+        const fetchPromises = res.items.map(async (ref) => await getDownloadURL(ref));
+        const photoList = await Promise.all(fetchPromises);
+        setPhotos(photoList);
+        sessionStorage.setItem('photos', JSON.stringify(photoList));
+      } catch (error) {
+        console.error('Error fetching photos:', error);
+
+      }
+      setIsLoading(false);
+    };
+  }
+
   useEffect(() => {
     const fetchVideos = async () => {
-      setIsLoading(true); 
+      setIsLoading(true);
       const cachedVideos = sessionStorage.getItem('videos');
       if (cachedVideos) {
         setVideos(JSON.parse(cachedVideos));
@@ -38,9 +63,9 @@ function App() {
           sessionStorage.setItem('videos', JSON.stringify(videoList));
         } catch (error) {
           console.error('Error fetching videos:', error);
-      
+
         }
-        setIsLoading(false); 
+        setIsLoading(false);
       }
     };
 
@@ -48,15 +73,15 @@ function App() {
   }, []);
 
   useEffect(() => {
-    setIsPlaying(new Array(videos.length).fill(false)); 
+    setIsPlaying(new Array(videos.length).fill(false));
 
     const observer = new IntersectionObserver((entries, observer) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           const video = entry.target as HTMLVideoElement;
-          
+
           const source = video.querySelector('source');
-          if (source && source.dataset.src) { 
+          if (source && source.dataset.src) {
             source.src = source.dataset.src;
             video.load();
             observer.unobserve(video);
@@ -73,7 +98,13 @@ function App() {
     });
 
     return () => observer.disconnect();
-  }, [videos]);
+  }, [videos, currentSelection]);
+
+  useEffect(() => {
+    if (currentSelection === 'photos' && photos.length === 0) {
+      fetchPhotos();
+    }
+  }, [currentSelection]);
 
   const togglePlay = (index: number, title: string) => {
     const video = videoRefs.current[index];
@@ -129,6 +160,14 @@ function App() {
 
   };
 
+  const handlePhotoLoad = (index: number, photoElement: HTMLImageElement) => {
+    const { naturalHeight, naturalWidth } = photoElement;
+    setPhotoDimensions(prevDimensions => ({
+      ...prevDimensions,
+      [index]: { height: naturalHeight, width: naturalWidth }
+    }));
+  };
+
   return (
     <div className='m-auto flex-auto'>
       <div>
@@ -156,14 +195,28 @@ function App() {
             <p className="mx-auto mt-2 max-w-3xl sm:text-lg text-md leading-8 text-gray-700">
               directory of the highest quality, hand-picked, organic saylor content.
             </p>
+            <div className="flex justify-center space-x-4 mt-8">
+              <button
+                className={`px-4 py-2 rounded-lg ${currentSelection === 'videos' ? 'bg-gray-300' : ''}`}
+                onClick={() => setCurrentSelection('videos')}
+              >
+                videos
+              </button>
+              <button
+                className={`px-4 py-2 rounded-lg ${currentSelection === 'photos' ? 'bg-gray-300' : ''}`}
+                onClick={() => setCurrentSelection('photos')}
+              >
+                photos
+              </button>
+            </div>
             <div>
               {isLoading ? (
                 <div className="flex justify-center items-center py-32">
-                  <p>Loading videos...</p>
-           
+                  <p>Loading {currentSelection}...</p>
+
                 </div>
-              ) : (
-                <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 rounded-md pt-8 sm:pt-12">
+              ) : currentSelection === 'videos' ? (
+                <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 rounded-md pt-8 sm:pt-8">
                   {videos.map((video, index) => (
                     <li key={index} className={enlarged !== -1 ? 'col-span-1 bg-white rounded-lg  mx-auto' : ' border border-btc hover:shadow-sm hover:shadow-btc col-span-1 bg-white rounded-lg  mx-auto shadow'}>
                       <div onClick={() => togglePlay(index, video.title)} className="overflow-hidden flex hover:cursor-pointer items-center justify-center rounded-t-lg" style={{ maxHeight: enlarged === index ? '' : '150px', maxWidth: enlarged === index ? '' : '320px' }}>
@@ -188,12 +241,31 @@ function App() {
                     </li>
                   ))}
                 </ul>
-              )}
+                ) : <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 rounded-md pt-8 sm:pt-8">
+                  {photos.map((photo, index) => (
+                    <li key={index} className={enlarged !== -1 ? 'col-span-1 bg-white rounded-lg  mx-auto' : ' border border-btc hover:shadow-sm hover:shadow-btc col-span-1 bg-white rounded-lg  mx-auto shadow'}>
+                      <div className="overflow-hidden flex hover:cursor-pointer items-center justify-center rounded-t-lg" style={{ maxHeight: enlarged === index ? '' : '150px', maxWidth: enlarged === index ? '' : '320px' }}>
+                        <img
+                          loading="lazy"
+                          className="h-full w-full"
+                          src={photo}
+                          onLoad={(e) => handlePhotoLoad(index, e.currentTarget)}
+                        />
+                      </div>
+                      <div className="flex justify-center space-x-2 pb-2 pt-1 text-sm text-gray-700 pt-2">
+                        {photoDimensions[index]?.height > 150 && (
+                          <button className='hover:text-btc' onClick={() => toggleSize(index)}>{enlarged === index ? 'shrink' : 'enlarge'}</button>
+                        )}&nbsp;{'|'}
+                        <a href={photo} target='_blank' download className='hover:text-btc'>download</a>
+                      </div>
+                    </li>
+                  ))}
+                </ul>}
 
 
             </div>
             <p className=" absolute bottom-0 text-center mx-auto mt-16 max-w-3xl text-sm  sm:text-md leading-8 text-gray-500 pb-2">
-              created by <a className='hover:text-btc ' href='https://twitter.com/andrew_eth' target='_blank'>@andrew_eth</a>
+              created by <a className='hover:text-btc ' href='https://twitter.com/andrew_eth' target='_blank'>@andrew_eth</a> (send me saylor memes)
             </p>
           </div>
         </div>
