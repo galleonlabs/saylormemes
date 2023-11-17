@@ -4,7 +4,7 @@ import btc from './assets/btc.png'
 import { useEffect, useRef, useState } from 'react';
 import { storage } from './main';
 import { ref, listAll, getDownloadURL, getMetadata } from "firebase/storage";
-import { logEvent } from 'firebase/analytics'; 
+import { logEvent } from 'firebase/analytics';
 import { analytics } from './main';
 
 function App() {
@@ -13,6 +13,7 @@ function App() {
   const [isPlaying, setIsPlaying] = useState<boolean[]>([]);
   const [enlarged, setEnlarged] = useState(-1)
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [videoDimensions, setVideoDimensions] = useState<{ [key: number]: { height: number, width: number } }>({});
 
   useEffect(() => {
     const fetchVideos = async () => {
@@ -89,8 +90,21 @@ function App() {
     }
   };
 
-  const logAnalyticsEvent = (eventName: any, eventParams:any) => {
+  const logAnalyticsEvent = (eventName: any, eventParams: any) => {
     logEvent(analytics, eventName, eventParams);
+  };
+
+  const handleVideoLoad = (index: number) => {
+
+    const video = videoRefs.current[index];
+    if (video) {
+      setVideoDimensions(prevDimensions => ({
+        ...prevDimensions,
+        [index]: { height: video.videoHeight, width: video.videoWidth }
+      }));
+    }
+    console.log(videoDimensions);
+
   };
 
   return (
@@ -124,31 +138,33 @@ function App() {
               {isLoading ? (
                 <div className="flex justify-center items-center py-32">
                   <p>Loading videos...</p>
-                  {/* Alternatively, you can use a spinner here */}
+           
                 </div>
               ) : (
-                  <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 rounded-md pt-8 sm:pt-12">
-                    {videos.map((video, index) => (
-                      <li key={index} className={enlarged !== -1 ? 'col-span-1 bg-white rounded-lg  mx-auto' : ' border border-btc hover:shadow-sm hover:shadow-btc col-span-1 bg-white rounded-lg  mx-auto shadow'}>
-                        <div onClick={() => togglePlay(index, video.title)} className="overflow-hidden flex hover:cursor-pointer items-center justify-center rounded-t-lg" style={{ maxHeight: enlarged === index ? '' : '150px', maxWidth: enlarged === index ? '' : '320px' }}>
-                          <video className="h-full w-full" ref={el => videoRefs.current[index] = el}>
-                            <source src={video.url} type="video/mp4" />
-                            Your browser does not support the video tag.
-                          </video>
-                        </div>
+                <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 rounded-md pt-8 sm:pt-12">
+                  {videos.map((video, index) => (
+                    <li key={index} className={enlarged !== -1 ? 'col-span-1 bg-white rounded-lg  mx-auto' : ' border border-btc hover:shadow-sm hover:shadow-btc col-span-1 bg-white rounded-lg  mx-auto shadow'}>
+                      <div onClick={() => togglePlay(index, video.title)} className="overflow-hidden flex hover:cursor-pointer items-center justify-center rounded-t-lg" style={{ maxHeight: enlarged === index ? '' : '150px', maxWidth: enlarged === index ? '' : '320px' }}>
+                        <video onLoadedMetadata={() => handleVideoLoad(index)} className="h-full w-full" ref={el => videoRefs.current[index] = el}>
+                          <source src={video.url} type="video/mp4" />
+                          Your browser does not support the video tag.
+                        </video>
+                      </div>
 
-                        <h3 className="text-center pt-2 text-sm font-medium text-gray-700">{video.title}</h3>
-                        <div className="flex justify-center space-x-2 pb-2 pt-1 text-sm text-gray-700">
-                          <button aria-label="Play video" className='hover:text-btc' onClick={() => togglePlay(index, video.title)}>{isPlaying[index] ? 'pause' : 'play'}</button>&nbsp;{'|'}
-                          <button className='hover:text-btc' onClick={() => toggleSize(index)}>{enlarged === index ? 'shrink' : 'enlarge'}</button>&nbsp;{'|'}
-                          <button className='hover:text-btc' onClick={() => requestFullScreen(index)}>full screen</button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+                      <h3 className="text-center pt-2 text-sm font-medium text-gray-700">{video.title}</h3>
+                      <div className="flex justify-center space-x-2 pb-2 pt-1 text-sm text-gray-700">
+                        <button aria-label="Play video" className='hover:text-btc' onClick={() => togglePlay(index, video.title)}>{isPlaying[index] ? 'pause' : 'play'}</button>&nbsp;{'|'}
+                        {videoDimensions[index]?.height > videoDimensions[index]?.width && (
+                          <span><button className='hover:text-btc' onClick={() => toggleSize(index)}>{enlarged === index ? 'shrink' : 'enlarge'}</button>&nbsp;{'|'}</span>
+                        )}
+                        <button className='hover:text-btc' onClick={() => requestFullScreen(index)}>full screen</button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               )}
 
-           
+
             </div>
             <p className=" absolute bottom-0 text-center mx-auto mt-16 max-w-3xl text-sm  sm:text-md leading-8 text-gray-500 pb-2">
               created by <a className='hover:text-btc ' href='https://twitter.com/andrew_eth' target='_blank'>@andrew_eth</a>
