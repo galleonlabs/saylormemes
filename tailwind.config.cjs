@@ -5,7 +5,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Inter var", ...defaultTheme.fontFamily.sans],
+        sans: ["monospace", ...defaultTheme.fontFamily.sans],
       },
       colors: {
         btc: "#FF9900",
