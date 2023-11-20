@@ -57,7 +57,7 @@ function App() {
         try {
           const listRef = ref(storage, 'videos/');
           const res = await listAll(listRef);
-          const fetchPromises = res.items.map(fetchVideoData);
+          const fetchPromises = res.items.filter(x => x.name.includes('.mp4')).map(fetchVideoData);
           const videoList = await Promise.all(fetchPromises);
           setVideos(videoList);
           sessionStorage.setItem('videos', JSON.stringify(videoList));
