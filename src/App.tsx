@@ -10,7 +10,6 @@ import { analytics } from './main';
 function App() {
   const [videos, setVideos] = useState<any[]>([]);
   const videoRefs = useRef<any[]>([]);
-  const [isPlaying, setIsPlaying] = useState<boolean[]>([]);
   const [enlarged, setEnlarged] = useState(-1)
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [videoDimensions, setVideoDimensions] = useState<{ [key: number]: { height: number, width: number } }>({});
@@ -19,9 +18,17 @@ function App() {
   const [photos, setPhotos] = useState<any[]>([]);
 
   const fetchVideoData = async (itemRef: StorageReference) => {
-    const url = await getDownloadURL(itemRef);
+    const thumbnailName = itemRef.name.replace('.mp4', '.png');
+    const thumbnailUrl = await getDownloadURL(ref(storage, `videos/${thumbnailName}`));
+
     const metadata = await getMetadata(itemRef);
-    return { url, title: metadata.customMetadata?.title || 'Untitled' };
+    return {
+      thumbnailUrl,
+      title: metadata.customMetadata?.title || 'Untitled',
+      videoUrl: '', // Placeholder for the actual video URL
+      fileName: itemRef.name,
+      isPlaying: false, // Added isPlaying property
+    };
   };
 
   const fetchPhotos = async () => {
@@ -72,33 +79,6 @@ function App() {
     fetchVideos();
   }, []);
 
-  useEffect(() => {
-    setIsPlaying(new Array(videos.length).fill(false));
-
-    const observer = new IntersectionObserver((entries, observer) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const video = entry.target as HTMLVideoElement;
-
-          const source = video.querySelector('source');
-          if (source && source.dataset.src) {
-            source.src = source.dataset.src;
-            video.load();
-            observer.unobserve(video);
-          }
-        }
-      });
-    }, {
-      rootMargin: '0px',
-      threshold: 0.1
-    });
-
-    videoRefs.current.forEach(video => {
-      if (video) observer.observe(video);
-    });
-
-    return () => observer.disconnect();
-  }, [videos, currentSelection]);
 
   useEffect(() => {
     if (currentSelection === 'photos' && photos.length === 0) {
@@ -106,17 +86,58 @@ function App() {
     }
   }, [currentSelection]);
 
-  const togglePlay = (index: number, title: string) => {
-    const video = videoRefs.current[index];
-    if (video) {
-      if (video.paused || video.ended) {
-        video.play();
-        setIsPlaying(isPlaying.map((play, i) => i === index ? true : play));
-        logAnalyticsEvent('play_video', { video: title });
+  const togglePlay = (index: number) => {
+    const videoToUpdate = videos[index];
+    console.log(videoRefs.current[index]);
+
+    if (!videoToUpdate.videoUrl || !videoRefs.current[index].src) {
+      getDownloadURL(ref(storage, `videos/${videoToUpdate.fileName}`)).then(url => {
+        const updatedVideo = { ...videoToUpdate, videoUrl: url, isPlaying: true };
+        updateVideo(index, updatedVideo);
+        playVideo(index, updatedVideo);
+      }).catch(error => console.error('Error fetching video URL:', error));
+    } else {
+      console.log(videos[index]);
+      const updatedVideo = { ...videoToUpdate, isPlaying: !videoToUpdate.isPlaying };
+      updateVideo(index, updatedVideo);
+      playOrPauseVideo(index, updatedVideo);
+    }
+  };
+
+
+  const updateVideo = (index: number, updatedVideo: any) => {
+    setVideos(prevVideos => prevVideos.map((video, idx) => idx === index ? updatedVideo : video));
+    updateSessionStorageVideos(index, { ...updatedVideo, isPlaying: false });
+  };
+
+  const updateSessionStorageVideos = (index: number, updatedVideo: any) => {
+    const cachedVideos = sessionStorage.getItem('videos');
+    if (cachedVideos) {
+      const videosArray = JSON.parse(cachedVideos);
+      videosArray[index] = updatedVideo;
+      sessionStorage.setItem('videos', JSON.stringify(videosArray));
+    }
+  };
+
+  const playVideo = (index: number, video: any) => {
+    const videoElement = videoRefs.current[index];
+    if (videoElement) {
+      videoElement.src = video.videoUrl;
+      videoElement.load();
+      videoElement.play();
+      logAnalyticsEvent('play_video', { video: video.title });
+    }
+  };
+
+  const playOrPauseVideo = (index: number, video: any) => {
+    const videoElement = videoRefs.current[index];
+    if (videoElement) {
+      if (videoElement.paused || videoElement.ended) {
+        videoElement.play();
+        logAnalyticsEvent('play_video', { video: video.title });
       } else {
-        video.pause();
-        setIsPlaying(isPlaying.map((play, i) => i === index ? false : play));
-        logAnalyticsEvent('pause_video', { video: title });
+        videoElement.pause();
+        logAnalyticsEvent('pause_video', { video: video.title });
       }
     }
   };
@@ -219,9 +240,13 @@ function App() {
                 <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 rounded-md pt-8 sm:pt-8">
                   {videos.map((video, index) => (
                     <li key={index} className={enlarged !== -1 ? 'col-span-1 bg-white rounded-lg  mx-auto' : ' border border-btc hover:shadow-sm hover:shadow-btc col-span-1 bg-white rounded-lg  mx-auto shadow'}>
-                      <div onClick={() => togglePlay(index, video.title)} className="overflow-hidden flex hover:cursor-pointer items-center justify-center rounded-t-lg" style={{ maxHeight: enlarged === index ? '' : '150px', maxWidth: enlarged === index ? '' : '320px' }}>
+                      <div onClick={() => togglePlay(index)} className="overflow-hidden flex hover:cursor-pointer items-center justify-center rounded-t-lg" style={{ maxHeight: enlarged === index ? '' : '150px', maxWidth: enlarged === index ? '' : '320px' }}>
+                        {/* Use thumbnail as a placeholder */}
+                        <img src={video.thumbnailUrl} className={video.isPlaying ? 'hidden' : ''} alt={video.title} />
+                        {/* Video element with ref set */}
                         <video
-                          className="h-full w-full"
+                          className={video.isPlaying ? 'h-full w-full block' : 'h-full w-full hidden'}
+
                           ref={el => videoRefs.current[index] = el}
                           onLoadedMetadata={() => handleVideoLoad(index)}
                         >
@@ -231,36 +256,39 @@ function App() {
                       </div>
 
                       <h3 className="text-center pt-2 text-sm font-medium text-gray-700">{video.title}</h3>
-                      <div className="flex justify-center space-x-2 pb-2 pt-1 text-sm text-gray-700">
-                        <button aria-label="Play video" className='hover:text-btc' onClick={() => togglePlay(index, video.title)}>{isPlaying[index] ? 'pause' : 'play'}</button>&nbsp;{'|'}
+                      <div className="flex justify-center space-x-2 pb-2 pt-1 text-sm text-gray-700 ">
+                        <button aria-label="Play video" className={(video.videoUrl === '' || !videoRefs.current[index]?.src) ? 'font-bold hover:text-btc' : 'hover:text-btc'} onClick={() => togglePlay(index)}>{video.isPlaying ? 'pause' : 'play'}</button>
                         {videoDimensions[index]?.height > videoDimensions[index]?.width && (
-                          <span><button className='hover:text-btc' onClick={() => toggleSize(index)}>{enlarged === index ? 'shrink' : 'enlarge'}</button>&nbsp;{'|'}</span>
+                          <span>{'|'}&nbsp;<button className='hover:text-btc' onClick={() => toggleSize(index)}>{enlarged === index ? 'shrink' : 'enlarge'}</button></span>
                         )}
-                        <button className='hover:text-btc' onClick={() => requestFullScreen(index)}>full screen</button>
+                        {(video.videoUrl !== '' && videoRefs.current[index]?.src) && (
+                          <span>{'|'}&nbsp;<button disabled={!video.isPlaying} className='hover:text-btc disabled:text-gray-300' onClick={() => requestFullScreen(index)}>full screen</button></span>
+                        )}
+
                       </div>
                     </li>
                   ))}
                 </ul>
-                ) : <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 rounded-md pt-8 sm:pt-8">
-                  {photos.map((photo, index) => (
-                    <li key={index} className={enlarged !== -1 ? 'col-span-1 bg-white rounded-lg  mx-auto' : ' border border-btc hover:shadow-sm hover:shadow-btc col-span-1 bg-white rounded-lg  mx-auto shadow'}>
-                      <div onClick={() => toggleSize(index)} className="overflow-hidden flex hover:cursor-pointer items-center justify-center rounded-t-lg" style={{ maxHeight: enlarged === index ? '' : '150px', maxWidth: enlarged === index ? '' : '320px' }}>
-                        <img
-                          loading="lazy"
-                          className="h-full w-full"
-                          src={photo}
-                          onLoad={(e) => handlePhotoLoad(index, e.currentTarget)}
-                        />
-                      </div>
-                      <div className="flex justify-center space-x-2 pb-2 pt-1 text-sm text-gray-700 pt-2">
-                        {photoDimensions[index]?.height > 150 && (
-                          <button className='hover:text-btc' onClick={() => toggleSize(index)}>{enlarged === index ? 'shrink' : 'enlarge'}</button>
-                        )}&nbsp;{'|'}
-                        <a href={photo} target='_blank' download className='hover:text-btc'>download</a>
-                      </div>
-                    </li>
-                  ))}
-                </ul>}
+              ) : <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 rounded-md pt-8 sm:pt-8">
+                {photos.map((photo, index) => (
+                  <li key={index} className={enlarged !== -1 ? 'col-span-1 bg-white rounded-lg  mx-auto' : ' border border-btc hover:shadow-sm hover:shadow-btc col-span-1 bg-white rounded-lg  mx-auto shadow'}>
+                    <div onClick={() => toggleSize(index)} className="overflow-hidden flex hover:cursor-pointer items-center justify-center rounded-t-lg" style={{ maxHeight: enlarged === index ? '' : '150px', maxWidth: enlarged === index ? '' : '320px' }}>
+                      <img
+                        loading="lazy"
+                        className="h-full w-full"
+                        src={photo}
+                        onLoad={(e) => handlePhotoLoad(index, e.currentTarget)}
+                      />
+                    </div>
+                    <div className="flex justify-center space-x-2 pb-2 pt-1 text-sm text-gray-700 pt-2">
+                      {photoDimensions[index]?.height > 150 && (
+                        <button className='hover:text-btc' onClick={() => toggleSize(index)}>{enlarged === index ? 'shrink' : 'enlarge'}</button>
+                      )}&nbsp;{'|'}
+                      <a href={photo} target='_blank' download className='hover:text-btc'>download</a>
+                    </div>
+                  </li>
+                ))}
+              </ul>}
 
 
             </div>
