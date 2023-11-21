@@ -79,7 +79,6 @@ function App() {
     fetchVideos();
   }, []);
 
-
   useEffect(() => {
     if (currentSelection === 'photos' && photos.length === 0) {
       fetchPhotos();
@@ -88,8 +87,7 @@ function App() {
 
   const togglePlay = (index: number) => {
     const videoToUpdate = videos[index];
-    console.log(videoRefs.current[index]);
-
+  
     if (!videoToUpdate.videoUrl || !videoRefs.current[index].src) {
       getDownloadURL(ref(storage, `videos/${videoToUpdate.fileName}`)).then(url => {
         const updatedVideo = { ...videoToUpdate, videoUrl: url, isPlaying: true };
@@ -97,13 +95,12 @@ function App() {
         playVideo(index, updatedVideo);
       }).catch(error => console.error('Error fetching video URL:', error));
     } else {
-      console.log(videos[index]);
+    
       const updatedVideo = { ...videoToUpdate, isPlaying: !videoToUpdate.isPlaying };
       updateVideo(index, updatedVideo);
       playOrPauseVideo(index, updatedVideo);
     }
   };
-
 
   const updateVideo = (index: number, updatedVideo: any) => {
     setVideos(prevVideos => prevVideos.map((video, idx) => idx === index ? updatedVideo : video));
@@ -242,7 +239,7 @@ function App() {
                     <li key={index} className={enlarged !== -1 ? 'col-span-1 bg-white rounded-lg  mx-auto' : ' border border-btc hover:shadow-sm hover:shadow-btc col-span-1 bg-white rounded-lg  mx-auto shadow'}>
                       <div onClick={() => togglePlay(index)} className="overflow-hidden flex hover:cursor-pointer items-center justify-center rounded-t-lg" style={{ maxHeight: enlarged === index ? '' : '150px', maxWidth: enlarged === index ? '' : '320px' }}>
                         {/* Use thumbnail as a placeholder */}
-                        <img src={video.thumbnailUrl} className={video.isPlaying ? 'hidden' : ''} alt={video.title} />
+                        <img src={video.thumbnailUrl} className={video.isPlaying ? 'hidden h-full w-full' : 'h-full w-full'} alt={video.title} />
                         {/* Video element with ref set */}
                         <video
                           className={video.isPlaying ? 'h-full w-full block' : 'h-full w-full hidden'}
@@ -280,7 +277,7 @@ function App() {
                         onLoad={(e) => handlePhotoLoad(index, e.currentTarget)}
                       />
                     </div>
-                    <div className="flex justify-center space-x-2 pb-2 pt-1 text-sm text-gray-700 pt-2">
+                    <div className="flex justify-center space-x-2 pb-2 text-sm text-gray-700 pt-2">
                       {photoDimensions[index]?.height > 150 && (
                         <button className='hover:text-btc' onClick={() => toggleSize(index)}>{enlarged === index ? 'shrink' : 'enlarge'}</button>
                       )}&nbsp;{'|'}
