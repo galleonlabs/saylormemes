@@ -26,9 +26,9 @@ function App() {
     return {
       thumbnailUrl,
       title: metadata.customMetadata?.title || 'Untitled',
-      videoUrl: '', // Placeholder for the actual video URL
+      videoUrl: '',
       fileName: itemRef.name,
-      isPlaying: false, // Added isPlaying property
+      isPlaying: false,
     };
   };
 
@@ -99,7 +99,6 @@ function App() {
         playVideo(index, updatedVideo);
       }).catch(error => console.error('Error fetching video URL:', error));
     } else {
-    
       const updatedVideo = { ...videoToUpdate, isPlaying: !videoToUpdate.isPlaying };
       updateVideo(index, updatedVideo);
       playOrPauseVideo(index, updatedVideo);
@@ -171,7 +170,6 @@ function App() {
   };
 
   const handleVideoLoad = (index: number) => {
-
     const video = videoRefs.current[index];
     if (video) {
       setVideoDimensions(prevDimensions => ({
@@ -179,7 +177,6 @@ function App() {
         [index]: { height: video.videoHeight, width: video.videoWidth }
       }));
     }
-
   };
 
   const handlePhotoLoad = (index: number, photoElement: HTMLImageElement) => {
@@ -194,7 +191,6 @@ function App() {
     <div className='m-auto flex-auto'>
       <div>
         <div className="mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-8">
-
           <div className="relative isolate overflow-hidden  shadow-md bg-white px-6 pb-24 pt-16 text-center sm:rounded-lg sm:px-16">
             <div className="mx-auto justify-center pb-5 isolate flex -space-x-2 overflow-hidden pt-1">
               <img
@@ -209,7 +205,6 @@ function App() {
                 src={btc}
                 alt=""
               />
-
             </div>
             <h2 className="mx-auto max-w-2xl text-2xl font-bold tracking-tight text-gray-700 sm:text-3xl">
               saylor memes
@@ -235,8 +230,8 @@ function App() {
                 title={'High grade saylor memes'}
                 className="mx-1">
                 <WhatsappIcon className='' size={24} borderRadius={16} />
-              </WhatsappShareButton></div>
-            
+              </WhatsappShareButton>
+            </div>
             <div className="flex justify-center space-x-4 mt-4 pt-8 border-t border-btc/50 ">
               <button
                 className={`px-4 py-2 rounded-lg ${currentSelection === 'videos' ? 'bg-btc/40 border-btc/30 border' : ''}`}
@@ -251,24 +246,19 @@ function App() {
                 photos
               </button>
             </div>
-            
             <div>
               {isLoading ? (
                 <div className="flex justify-center items-center py-32">
                   <p>Loading {currentSelection}...</p>
-
                 </div>
               ) : currentSelection === 'videos' ? (
                 <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 rounded-md pt-8 sm:pt-8">
                   {videos.map((video, index) => (
                     <li key={index} className={enlarged !== -1 ? 'col-span-1 bg-white rounded-lg  mx-auto' : ' border border-btc hover:shadow-sm hover:shadow-btc col-span-1 bg-white rounded-lg  mx-auto shadow'}>
                       <div onClick={() => togglePlay(index)} className="overflow-hidden flex hover:cursor-pointer items-center justify-center rounded-t-lg" style={{ maxHeight: enlarged === index ? '' : '150px', maxWidth: enlarged === index ? '' : '320px' }}>
-                        {/* Use thumbnail as a placeholder */}
                         <img src={video.thumbnailUrl} className={video.isPlaying ? 'hidden h-full w-full' : 'h-full w-full'} alt={video.title} />
-                        {/* Video element with ref set */}
                         <video
                           className={video.isPlaying ? 'h-full w-full block' : 'h-full w-full hidden'}
-
                           ref={el => videoRefs.current[index] = el}
                           onLoadedMetadata={() => handleVideoLoad(index)}
                         >
@@ -276,7 +266,6 @@ function App() {
                           Your browser does not support the video tag.
                         </video>
                       </div>
-
                       <h3 className="text-center pt-2 text-sm font-medium text-gray-700">{video.title}</h3>
                       <div className="flex justify-center space-x-2 pb-2 pt-1 text-sm text-gray-700 ">
                         <button aria-label="Play video" className={(video.videoUrl === '' || !videoRefs.current[index]?.src) ? 'font-bold hover:text-btc' : 'hover:text-btc'} onClick={() => togglePlay(index)}>{video.isPlaying ? 'pause' : 'play'}</button>
@@ -310,8 +299,6 @@ function App() {
                   </li>
                 ))}
               </ul>}
-
-
             </div>
             <p className=" absolute bottom-0 text-center mx-auto mt-16 max-w-3xl text-sm  sm:text-md leading-8 text-gray-500 pb-2">
               created by <a className='hover:text-btc ' href='https://twitter.com/galleonlabs' target='_blank'>@galleonlabs</a> (send us saylor memes)
