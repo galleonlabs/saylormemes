@@ -53,35 +53,38 @@ function App() {
     };
   }
 
-  useEffect(() => {
-    const fetchVideos = async () => {
-      setIsLoading(true);
-      const cachedVideos = sessionStorage.getItem('videos');
-      if (cachedVideos) {
-        setVideos(JSON.parse(cachedVideos));
-        setIsLoading(false);
-      } else {
-        try {
-          const listRef = ref(storage, 'videos/');
-          const res = await listAll(listRef);
-          const fetchPromises = res.items.filter(x => x.name.includes('.mp4')).map(fetchVideoData);
-          const videoList = await Promise.all(fetchPromises);
-          setVideos(videoList);
-          sessionStorage.setItem('videos', JSON.stringify(videoList));
-        } catch (error) {
-          console.error('Error fetching videos:', error);
+  const fetchVideos = async () => {
+    setIsLoading(true);
+    const cachedVideos = sessionStorage.getItem('videos');
+    if (cachedVideos) {
+      setVideos(JSON.parse(cachedVideos));
+      setIsLoading(false);
+    } else {
+      try {
+        const listRef = ref(storage, 'videos/');
+        const res = await listAll(listRef);
+        const fetchPromises = res.items.filter(x => x.name.includes('.mp4')).map(fetchVideoData);
+        const videoList = await Promise.all(fetchPromises);
+        setVideos(videoList);
+        sessionStorage.setItem('videos', JSON.stringify(videoList));
+      } catch (error) {
+        console.error('Error fetching videos:', error);
 
-        }
-        setIsLoading(false);
       }
-    };
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchVideos();
   }, []);
 
   useEffect(() => {
     if (currentSelection === 'photos' && photos.length === 0) {
       fetchPhotos();
+    }
+    if (currentSelection === 'videos') {
+      fetchVideos();
     }
   }, [currentSelection]);
 
