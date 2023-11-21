@@ -6,6 +6,7 @@ import { storage } from './main';
 import { ref, listAll, getDownloadURL, getMetadata, StorageReference } from "firebase/storage";
 import { logEvent } from 'firebase/analytics';
 import { analytics } from './main';
+import { TwitterShareButton, FacebookShareButton, TwitterIcon, FacebookIcon, WhatsappIcon, WhatsappShareButton } from 'react-share';
 
 function App() {
   const [videos, setVideos] = useState<any[]>([]);
@@ -216,20 +217,41 @@ function App() {
             <p className="mx-auto mt-2 max-w-3xl sm:text-lg text-md leading-8 text-gray-700">
               directory of the highest quality, hand-picked, organic saylor content.
             </p>
-            <div className="flex justify-center space-x-4 mt-8">
+            <div className='mt-4'>
+              <TwitterShareButton
+                url={'https://saylormemes.com'}
+                title={'High grade @saylor memes'}
+                className="mx-1">
+                <TwitterIcon className='' size={24} borderRadius={16} />
+              </TwitterShareButton>
+              <FacebookShareButton
+                url={'https://saylormemes.com'}
+                title={'High grade saylor memes'}
+                className="mx-1">
+                <FacebookIcon className='' size={24} borderRadius={16} />
+              </FacebookShareButton>
+              <WhatsappShareButton
+                url={'https://saylormemes.com'}
+                title={'High grade saylor memes'}
+                className="mx-1">
+                <WhatsappIcon className='' size={24} borderRadius={16} />
+              </WhatsappShareButton></div>
+            
+            <div className="flex justify-center space-x-4 mt-4 pt-8 border-t border-btc/50 ">
               <button
-                className={`px-4 py-2 rounded-lg ${currentSelection === 'videos' ? 'bg-gray-300' : ''}`}
+                className={`px-4 py-2 rounded-lg ${currentSelection === 'videos' ? 'bg-btc/40 border-btc/30 border' : ''}`}
                 onClick={() => setCurrentSelection('videos')}
               >
                 videos
               </button>
               <button
-                className={`px-4 py-2 rounded-lg ${currentSelection === 'photos' ? 'bg-gray-300' : ''}`}
+                className={`px-4 py-2 rounded-lg ${currentSelection === 'photos' ? 'bg-btc/40 border-btc/30 border' : ''}`}
                 onClick={() => setCurrentSelection('photos')}
               >
                 photos
               </button>
             </div>
+            
             <div>
               {isLoading ? (
                 <div className="flex justify-center items-center py-32">
@@ -264,8 +286,7 @@ function App() {
                         {(video.videoUrl !== '' && videoRefs.current[index]?.src) && (
                           <span>{'|'}&nbsp;<button disabled={!video.isPlaying} className='hover:text-btc disabled:text-gray-300' onClick={() => requestFullScreen(index)}>full screen</button></span>
                         )}
-
-                      </div>
+                       </div>
                     </li>
                   ))}
                 </ul>
