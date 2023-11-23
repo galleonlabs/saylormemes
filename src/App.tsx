@@ -192,7 +192,7 @@ function App() {
       <div>
         <div className="mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-8">
 
-          <div className="relative isolate overflow-hidden border-y-2 sm:border-2 border-gray-500 shadow-md bg-white/90 px-6 pb-24 pt-16 text-center sm:rounded-md sm:px-16">
+          <div className="relative isolate overflow-hidden border-y-2 sm:border-2 border-gray-500 shadow-md bg-white px-6 pb-24 pt-16 text-center sm:rounded-md sm:px-16">
             <div className="mx-auto justify-center pb-5 isolate flex -space-x-2 overflow-hidden pt-1">
               <img
                 loading="lazy"
