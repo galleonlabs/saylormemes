@@ -191,17 +191,18 @@ function App() {
     <div className='m-auto flex-auto'>
       <div>
         <div className="mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-8">
-          <div className="relative isolate overflow-hidden  shadow-md bg-white px-6 pb-24 pt-16 text-center sm:rounded-lg sm:px-16">
+
+          <div className="relative isolate overflow-hidden border-y-2 sm:border-2 border-gray-500 shadow-md bg-white/90 px-6 pb-24 pt-16 text-center sm:rounded-md sm:px-16">
             <div className="mx-auto justify-center pb-5 isolate flex -space-x-2 overflow-hidden pt-1">
               <img
                 loading="lazy"
-                className="relative z-30 inline-block sm:h-16 sm:w-16 h-16 w-16 rounded-full border-2 bg-btc border-btc "
+                className="relative z-30 inline-block sm:h-24 sm:w-24 h-16 w-16 rounded-full border shadow-md shadow-gray-400/60 border-gray-500  "
                 src={saylor}
                 alt=""
               />
               <img
                 loading="lazy"
-                className="relative z-20 inline-block sm:h-16 sm:w-16 h-16 w-16 rounded-full border-2 bg-btc border-btc "
+                className="relative z-20 inline-block sm:h-24 sm:w-24 h-16 w-16 rounded-full border shadow-md shadow-gray-400/60 border-gray-500  "
                 src={btc}
                 alt=""
               />
@@ -230,17 +231,17 @@ function App() {
                 title={'High grade saylor memes'}
                 className="mx-1">
                 <WhatsappIcon className='' size={24} borderRadius={16} />
-              </WhatsappShareButton>
-            </div>
-            <div className="flex justify-center space-x-4 mt-4 pt-8 border-t border-btc/50 ">
+              </WhatsappShareButton></div>
+            
+            <div className="flex justify-center space-x-4 mt-4 pt-8 border-t border-gray-600 ">
               <button
-                className={`px-4 py-2 rounded-lg ${currentSelection === 'videos' ? 'bg-btc/40 border-btc/30 border' : ''}`}
+                className={`px-4 py-2 rounded-md ${currentSelection === 'videos' ? 'bg-btc/20 border-gray-600 border' : 'hover:bg-btc/10'}`}
                 onClick={() => setCurrentSelection('videos')}
               >
                 videos
               </button>
               <button
-                className={`px-4 py-2 rounded-lg ${currentSelection === 'photos' ? 'bg-btc/40 border-btc/30 border' : ''}`}
+                className={`px-4 py-2 rounded-md ${currentSelection === 'photos' ? 'bg-btc/20 border-gray-600 border' : 'hover:bg-btc/10'}`}
                 onClick={() => setCurrentSelection('photos')}
               >
                 photos
@@ -252,10 +253,11 @@ function App() {
                   <p>Loading {currentSelection}...</p>
                 </div>
               ) : currentSelection === 'videos' ? (
-                <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 rounded-md pt-8 sm:pt-8">
+                <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 rounded-md pt-6 sm:pt-6 ">
                   {videos.map((video, index) => (
-                    <li key={index} className={enlarged !== -1 ? 'col-span-1 bg-white rounded-lg  mx-auto' : ' border border-btc hover:shadow-sm hover:shadow-btc col-span-1 bg-white rounded-lg  mx-auto shadow'}>
-                      <div onClick={() => togglePlay(index)} className="overflow-hidden flex hover:cursor-pointer items-center justify-center rounded-t-lg" style={{ maxHeight: enlarged === index ? '' : '150px', maxWidth: enlarged === index ? '' : '320px' }}>
+                    <li key={index} className={enlarged !== -1 ? 'col-span-1 bg-white/90 rounded-md  mx-auto' : ' border border-gray-600 hover:border-btc hover:shadow-sm hover:shadow-btc col-span-1 bg-white/90 rounded-md  mx-auto shadow'}>
+                      <div onClick={() => togglePlay(index)} className="overflow-hidden flex hover:cursor-pointer items-center justify-center rounded-t-md" style={{ maxHeight: enlarged === index ? '' : '150px', maxWidth: enlarged === index ? '' : '320px' }}>
+                        {/* Use thumbnail as a placeholder */}
                         <img src={video.thumbnailUrl} className={video.isPlaying ? 'hidden h-full w-full' : 'h-full w-full'} alt={video.title} />
                         <video
                           className={video.isPlaying ? 'h-full w-full block' : 'h-full w-full hidden'}
@@ -279,10 +281,10 @@ function App() {
                     </li>
                   ))}
                 </ul>
-              ) : <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 rounded-md pt-8 sm:pt-8">
+              ) : <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 rounded-md pt-6 sm:pt-6">
                 {photos.map((photo, index) => (
-                  <li key={index} className={enlarged !== -1 ? 'col-span-1 bg-white rounded-lg  mx-auto' : ' border border-btc hover:shadow-sm hover:shadow-btc col-span-1 bg-white rounded-lg  mx-auto shadow'}>
-                    <div onClick={() => toggleSize(index)} className="overflow-hidden flex hover:cursor-pointer items-center justify-center rounded-t-lg" style={{ maxHeight: enlarged === index ? '' : '150px', maxWidth: enlarged === index ? '' : '320px' }}>
+                  <li key={index} className={enlarged !== -1 ? 'col-span-1 bg-white/90 rounded-md  mx-auto' : '  border border-gray-600/50 hover:border-btc hover:shadow-sm hover:shadow-btc col-span-1 bg-white/90 rounded-md  mx-auto shadow'}>
+                    <div onClick={() => toggleSize(index)} className="overflow-hidden flex hover:cursor-pointer items-center justify-center rounded-t-md" style={{ maxHeight: enlarged === index ? '' : '150px', maxWidth: enlarged === index ? '' : '320px' }}>
                       <img
                         loading="lazy"
                         className="h-full w-full"
