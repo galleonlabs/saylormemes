@@ -1,315 +1,471 @@
-import './App.css'
+import { useState, useEffect, useCallback } from 'react';
+import { storage, analytics } from './main';
+import { ref, listAll, getDownloadURL, getMetadata } from "firebase/storage";
+import { logEvent } from 'firebase/analytics';
+import { TwitterShareButton, FacebookShareButton, WhatsappShareButton } from 'react-share';
+import { TwitterIcon, FacebookIcon, WhatsappIcon } from 'react-share';
 import saylor from './assets/saylor.jpg'
 import btc from './assets/btc.png'
-import { useEffect, useRef, useState } from 'react';
-import { storage } from './main';
-import { ref, listAll, getDownloadURL, getMetadata, StorageReference } from "firebase/storage";
-import { logEvent } from 'firebase/analytics';
-import { analytics } from './main';
-import { TwitterShareButton, FacebookShareButton, TwitterIcon, FacebookIcon, WhatsappIcon, WhatsappShareButton } from 'react-share';
+
+// Simple types for our data
+type ContentType = 'videos' | 'photos';
+
+interface VideoItem {
+  id: string;
+  thumbnailUrl: string;
+  videoUrl: string;
+  title: string;
+}
 
 function App() {
-  const [videos, setVideos] = useState<any[]>([]);
-  const videoRefs = useRef<any[]>([]);
-  const [enlarged, setEnlarged] = useState(-1)
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [videoDimensions, setVideoDimensions] = useState<{ [key: number]: { height: number, width: number } }>({});
-  const [photoDimensions, setPhotoDimensions] = useState<{ [key: number]: { height: number, width: number } }>({});
-  const [currentSelection, setCurrentSelection] = useState('videos');
-  const [photos, setPhotos] = useState<any[]>([]);
-
-  const fetchVideoData = async (itemRef: StorageReference) => {
-    const thumbnailName = itemRef.name.replace('.mp4', '.png');
-    const thumbnailUrl = await getDownloadURL(ref(storage, `videos/${thumbnailName}`));
-
-    const metadata = await getMetadata(itemRef);
-    return {
-      thumbnailUrl,
-      title: metadata.customMetadata?.title || 'Untitled',
-      videoUrl: '',
-      fileName: itemRef.name,
-      isPlaying: false,
-    };
-  };
-
-  const fetchPhotos = async () => {
-    setIsLoading(true);
-    const cachedPhotos = sessionStorage.getItem('photos');
-    if (cachedPhotos) {
-      setPhotos(JSON.parse(cachedPhotos));
-      setIsLoading(false);
-    } else {
-      try {
-        const listRef = ref(storage, 'photos/');
-        const res = await listAll(listRef);
-        const fetchPromises = res.items.map(async (ref) => await getDownloadURL(ref));
-        const photoList = await Promise.all(fetchPromises);
-        setPhotos(photoList);
-        sessionStorage.setItem('photos', JSON.stringify(photoList));
-      } catch (error) {
-        console.error('Error fetching photos:', error);
-
+  // State
+  const [contentType, setContentType] = useState<ContentType>('videos');
+  const [videos, setVideos] = useState<VideoItem[]>([]);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeItem, setActiveItem] = useState<string | null>(null);
+  
+  // Fetch videos from Firebase
+  const fetchVideos = useCallback(async () => {
+    setLoading(true);
+    
+    try {
+      // Try to use cache first
+      const cachedVideos = sessionStorage.getItem('saylor_videos');
+      if (cachedVideos) {
+        setVideos(JSON.parse(cachedVideos));
+        setLoading(false);
+        return;
       }
-      setIsLoading(false);
-    };
-  }
-
-  const fetchVideos = async () => {
-    setIsLoading(true);
-    const cachedVideos = sessionStorage.getItem('videos');
-    if (cachedVideos) {
-      setVideos(JSON.parse(cachedVideos));
-      setIsLoading(false);
-    } else {
-      try {
-        const listRef = ref(storage, 'videos/');
-        const res = await listAll(listRef);
-        const fetchPromises = res.items.filter(x => x.name.includes('.mp4')).map(fetchVideoData);
-        const videoList = await Promise.all(fetchPromises);
-        setVideos(videoList);
-        sessionStorage.setItem('videos', JSON.stringify(videoList));
-      } catch (error) {
-        console.error('Error fetching videos:', error);
-
+      
+      // Fetch from Firebase
+      const videoList: VideoItem[] = [];
+      const videosRef = ref(storage, 'videos/');
+      const result = await listAll(videosRef);
+      
+      // Get video files (mp4) and their thumbnails (png)
+      const videoFiles = result.items.filter(item => item.name.endsWith('.mp4'));
+      
+      for (const videoRef of videoFiles) {
+        try {
+          // Get video metadata for title
+          const metadata = await getMetadata(videoRef);
+          const title = metadata.customMetadata?.title || videoRef.name.replace('.mp4', '');
+          
+          // Get thumbnail URL (replacing .mp4 with .png)
+          const thumbnailName = videoRef.name.replace('.mp4', '.png');
+          const thumbnailRef = ref(storage, `videos/${thumbnailName}`);
+          const thumbnailUrl = await getDownloadURL(thumbnailRef);
+          
+          // Add to video list (we'll lazy-load the actual video URL when needed)
+          videoList.push({
+            id: videoRef.name,
+            thumbnailUrl,
+            videoUrl: '', // Lazy-loaded on demand
+            title
+          });
+        } catch (error) {
+          console.error(`Error processing video ${videoRef.name}:`, error);
+        }
       }
-      setIsLoading(false);
+      
+      // Save to state and cache
+      setVideos(videoList);
+      sessionStorage.setItem('saylor_videos', JSON.stringify(videoList));
+    } catch (error) {
+      console.error('Error fetching videos:', error);
+    } finally {
+      setLoading(false);
     }
-  };
-
+  }, []);
+  
+  // Fetch photos from Firebase
+  const fetchPhotos = useCallback(async () => {
+    setLoading(true);
+    
+    try {
+      // Try to use cache first
+      const cachedPhotos = sessionStorage.getItem('saylor_photos');
+      if (cachedPhotos) {
+        setPhotos(JSON.parse(cachedPhotos));
+        setLoading(false);
+        return;
+      }
+      
+      // Fetch from Firebase
+      const photosRef = ref(storage, 'photos/');
+      const result = await listAll(photosRef);
+      
+      // Get download URLs for all photos
+      const photoUrls = await Promise.all(
+        result.items.map(item => getDownloadURL(item))
+      );
+      
+      // Save to state and cache
+      setPhotos(photoUrls);
+      sessionStorage.setItem('saylor_photos', JSON.stringify(photoUrls));
+    } catch (error) {
+      console.error('Error fetching photos:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  
+  // Load videos on initial render
   useEffect(() => {
     fetchVideos();
-  }, []);
-
+  }, [fetchVideos]);
+  
+  // Handle tab switching
   useEffect(() => {
-    if (currentSelection === 'photos' && photos.length === 0) {
+    // Reset active item when switching tabs
+    setActiveItem(null);
+    
+    // Load photos if needed
+    if (contentType === 'photos' && photos.length === 0) {
       fetchPhotos();
     }
-    if (currentSelection === 'videos') {
-      fetchVideos();
-    }
-  }, [currentSelection]);
-
-  const togglePlay = (index: number) => {
-    const videoToUpdate = videos[index];
+  }, [contentType, photos.length, fetchPhotos]);
   
-    if (!videoToUpdate.videoUrl || !videoRefs.current[index].src) {
-      getDownloadURL(ref(storage, `videos/${videoToUpdate.fileName}`)).then(url => {
-        const updatedVideo = { ...videoToUpdate, videoUrl: url, isPlaying: true };
-        updateVideo(index, updatedVideo);
-        playVideo(index, updatedVideo);
-      }).catch(error => console.error('Error fetching video URL:', error));
-    } else {
-      const updatedVideo = { ...videoToUpdate, isPlaying: !videoToUpdate.isPlaying };
-      updateVideo(index, updatedVideo);
-      playOrPauseVideo(index, updatedVideo);
-    }
-  };
-
-  const updateVideo = (index: number, updatedVideo: any) => {
-    setVideos(prevVideos => prevVideos.map((video, idx) => idx === index ? updatedVideo : video));
-    updateSessionStorageVideos(index, { ...updatedVideo, isPlaying: false });
-  };
-
-  const updateSessionStorageVideos = (index: number, updatedVideo: any) => {
-    const cachedVideos = sessionStorage.getItem('videos');
-    if (cachedVideos) {
-      const videosArray = JSON.parse(cachedVideos);
-      videosArray[index] = updatedVideo;
-      sessionStorage.setItem('videos', JSON.stringify(videosArray));
-    }
-  };
-
-  const playVideo = (index: number, video: any) => {
-    const videoElement = videoRefs.current[index];
-    if (videoElement) {
-      videoElement.src = video.videoUrl;
-      videoElement.load();
-      videoElement.play();
-      logAnalyticsEvent('play_video', { video: video.title });
-    }
-  };
-
-  const playOrPauseVideo = (index: number, video: any) => {
-    const videoElement = videoRefs.current[index];
-    if (videoElement) {
-      if (videoElement.paused || videoElement.ended) {
-        videoElement.play();
-        logAnalyticsEvent('play_video', { video: video.title });
-      } else {
-        videoElement.pause();
-        logAnalyticsEvent('pause_video', { video: video.title });
+  // Handle playing a video
+  const playVideo = async (videoId: string) => {
+    try {
+      // If already active, close it
+      if (activeItem === videoId) {
+        setActiveItem(null);
+        return;
       }
-    }
-  };
-
-  const toggleSize = (index: number) => {
-    if (index === enlarged) {
-      setEnlarged(-1)
-    } else {
-      setEnlarged(index)
-    }
-  };
-
-  const requestFullScreen = (index: number) => {
-    const video = videoRefs.current[index];
-    if (video) {
-      if (video.requestFullscreen) {
-        video.requestFullscreen();
-      } else if (video.mozRequestFullScreen) { /* Firefox */
-        video.mozRequestFullScreen();
-      } else if (video.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
-        video.webkitRequestFullscreen();
-      } else if (video.msRequestFullscreen) { /* IE/Edge */
-        video.msRequestFullscreen();
+      
+      // Set as active
+      setActiveItem(videoId);
+      
+      // Find the video in our list
+      const videoIndex = videos.findIndex(v => v.id === videoId);
+      if (videoIndex === -1) return;
+      
+      // If video URL not yet loaded, get it now
+      if (!videos[videoIndex].videoUrl) {
+        const videoRef = ref(storage, `videos/${videoId}`);
+        const url = await getDownloadURL(videoRef);
+        
+        // Update video in state with URL
+        const updatedVideos = [...videos];
+        updatedVideos[videoIndex] = {
+          ...updatedVideos[videoIndex],
+          videoUrl: url
+        };
+        setVideos(updatedVideos);
+        
+        // Update cache
+        sessionStorage.setItem('saylor_videos', JSON.stringify(updatedVideos));
       }
+      
+      // Log analytics
+      logEvent(analytics, 'play_video', { video: videos[videoIndex].title });
+    } catch (error) {
+      console.error('Error playing video:', error);
     }
   };
-
-  const logAnalyticsEvent = (eventName: any, eventParams: any) => {
-    logEvent(analytics, eventName, eventParams);
-  };
-
-  const handleVideoLoad = (index: number) => {
-    const video = videoRefs.current[index];
-    if (video) {
-      setVideoDimensions(prevDimensions => ({
-        ...prevDimensions,
-        [index]: { height: video.videoHeight, width: video.videoWidth }
-      }));
+  
+  // Handle viewing a photo
+  const viewPhoto = (photoUrl: string) => {
+    // If already active, close it
+    if (activeItem === photoUrl) {
+      setActiveItem(null);
+      return;
     }
+    
+    // Set as active
+    setActiveItem(photoUrl);
+    
+    // Log analytics
+    logEvent(analytics, 'view_photo', { photo: photoUrl });
   };
-
-  const handlePhotoLoad = (index: number, photoElement: HTMLImageElement) => {
-    const { naturalHeight, naturalWidth } = photoElement;
-    setPhotoDimensions(prevDimensions => ({
-      ...prevDimensions,
-      [index]: { height: naturalHeight, width: naturalWidth }
-    }));
+  
+  // Handle download for photos
+  const downloadPhoto = (photoUrl: string) => {
+    // Create a temporary link and trigger download
+    const link = document.createElement('a');
+    link.href = photoUrl;
+    link.target = '_blank';
+    
+    // Generate a filename from the URL
+    const filename = photoUrl.split('/').pop() || 'saylor-meme.jpg';
+    link.download = filename;
+    
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Log analytics
+    logEvent(analytics, 'download_photo', { photo: photoUrl });
   };
 
   return (
-    <div className='m-auto flex-auto'>
-      <div>
-        <div className="mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-8">
-
-          <div className="relative isolate overflow-hidden border-y-2 sm:border-2 border-gray-500 shadow-md bg-white px-6 pb-24 pt-16 text-center sm:rounded-md sm:px-16">
-            <div className="mx-auto justify-center pb-5 isolate flex -space-x-2 overflow-hidden pt-1">
-              <img
+    <div className="flex min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+      <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        {/* Header */}
+        <header className="mb-8 text-center">
+          <div className="flex justify-center -space-x-4">
+            <div className="relative z-10 overflow-hidden w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-btc shadow-lg bg-white p-1 transition-all duration-300 hover:scale-110 hover:rotate-6 animate-float" style={{ animationDelay: '0.5s' }}>
+              <img 
+                src={saylor} 
+                alt="Michael Saylor" 
+                className="w-full h-full object-cover rounded-full"
                 loading="lazy"
-                className="relative z-30 inline-block sm:h-24 sm:w-24 h-16 w-16 rounded-full border shadow-md shadow-gray-400/60 border-gray-500  "
-                src={saylor}
-                alt=""
-              />
-              <img
-                loading="lazy"
-                className="relative z-20 inline-block sm:h-24 sm:w-24 h-16 w-16 rounded-full border shadow-md shadow-gray-400/60 border-gray-500  "
-                src={btc}
-                alt=""
               />
             </div>
-            <h2 className="mx-auto max-w-2xl text-2xl font-bold tracking-tight text-gray-700 sm:text-3xl">
-              saylor memes
-            </h2>
-            <p className="mx-auto mt-2 max-w-3xl sm:text-lg text-md leading-8 text-gray-700">
-              directory of the highest quality, hand-picked, organic saylor content.
-            </p>
-            <div className='mt-4'>
-              <TwitterShareButton
-                url={'https://saylormemes.com'}
-                title={'High grade @saylor memes'}
-                className="mx-1">
-                <TwitterIcon className='' size={24} borderRadius={16} />
-              </TwitterShareButton>
-              <FacebookShareButton
-                url={'https://saylormemes.com'}
-                title={'High grade saylor memes'}
-                className="mx-1">
-                <FacebookIcon className='' size={24} borderRadius={16} />
-              </FacebookShareButton>
-              <WhatsappShareButton
-                url={'https://saylormemes.com'}
-                title={'High grade saylor memes'}
-                className="mx-1">
-                <WhatsappIcon className='' size={24} borderRadius={16} />
-              </WhatsappShareButton></div>
-            
-            <div className="flex justify-center space-x-4 mt-4 pt-8 border-t border-gray-600 ">
-              <button
-                className={`px-4 py-2 rounded-md ${currentSelection === 'videos' ? 'bg-btc/20 border-gray-600 border' : 'hover:bg-btc/10'}`}
-                onClick={() => setCurrentSelection('videos')}
-              >
-                videos
-              </button>
-              <button
-                className={`px-4 py-2 rounded-md ${currentSelection === 'photos' ? 'bg-btc/20 border-gray-600 border' : 'hover:bg-btc/10'}`}
-                onClick={() => setCurrentSelection('photos')}
-              >
-                photos
-              </button>
+            <div className="relative z-0 overflow-hidden w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-btc shadow-lg bg-white p-1 transition-all duration-300 hover:scale-110 hover:-rotate-6 animate-float">
+              <img 
+                src={btc} 
+                alt="Bitcoin logo" 
+                className="w-full h-full object-cover rounded-full"
+                loading="lazy"
+              />
             </div>
-            <div>
-              {isLoading ? (
-                <div className="flex justify-center items-center py-32">
-                  <p>Loading {currentSelection}...</p>
-                </div>
-              ) : currentSelection === 'videos' ? (
-                <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 rounded-md pt-6 sm:pt-6 ">
-                  {videos.map((video, index) => (
-                    <li key={index} className={enlarged !== -1 ? 'col-span-1 bg-white/90 rounded-md  mx-auto' : ' border border-gray-600 hover:border-btc hover:shadow-sm hover:shadow-btc col-span-1 bg-white/90 rounded-md  mx-auto shadow'}>
-                      <div onClick={() => togglePlay(index)} className="overflow-hidden flex hover:cursor-pointer items-center justify-center rounded-t-md" style={{ maxHeight: enlarged === index ? '' : '150px', maxWidth: enlarged === index ? '' : '320px' }}>
-                        {/* Use thumbnail as a placeholder */}
-                        <img src={video.thumbnailUrl} className={video.isPlaying ? 'hidden h-full w-full' : 'h-full w-full'} alt={video.title} />
-                        <video
-                          className={video.isPlaying ? 'h-full w-full block' : 'h-full w-full hidden'}
-                          ref={el => videoRefs.current[index] = el}
-                          onLoadedMetadata={() => handleVideoLoad(index)}
-                        >
-                          <source data-src={video.url} type="video/mp4" />
-                          Your browser does not support the video tag.
-                        </video>
-                      </div>
-                      <h3 className="text-center pt-2 text-sm font-medium text-gray-700">{video.title}</h3>
-                      <div className="flex justify-center space-x-2 pb-2 pt-1 text-sm text-gray-700 ">
-                        <button aria-label="Play video" className={(video.videoUrl === '' || !videoRefs.current[index]?.src) ? 'font-bold hover:text-btc' : 'hover:text-btc'} onClick={() => togglePlay(index)}>{video.isPlaying ? 'pause' : 'play'}</button>
-                        {videoDimensions[index]?.height > videoDimensions[index]?.width && (
-                          <span>{'|'}&nbsp;<button className='hover:text-btc' onClick={() => toggleSize(index)}>{enlarged === index ? 'shrink' : 'enlarge'}</button></span>
-                        )}
-                        {(video.videoUrl !== '' && videoRefs.current[index]?.src) && (
-                          <span>{'|'}&nbsp;<button disabled={!video.isPlaying} className='hover:text-btc disabled:text-gray-300' onClick={() => requestFullScreen(index)}>full screen</button></span>
-                        )}
-                       </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 rounded-md pt-6 sm:pt-6">
-                {photos.map((photo, index) => (
-                  <li key={index} className={enlarged !== -1 ? 'col-span-1 bg-white/90 rounded-md  mx-auto' : '  border border-gray-600/50 hover:border-btc hover:shadow-sm hover:shadow-btc col-span-1 bg-white/90 rounded-md  mx-auto shadow'}>
-                    <div onClick={() => toggleSize(index)} className="overflow-hidden flex hover:cursor-pointer items-center justify-center rounded-t-md" style={{ maxHeight: enlarged === index ? '' : '150px', maxWidth: enlarged === index ? '' : '320px' }}>
-                      <img
-                        loading="lazy"
-                        className="h-full w-full"
-                        src={photo}
-                        onLoad={(e) => handlePhotoLoad(index, e.currentTarget)}
-                      />
-                    </div>
-                    <div className="flex justify-center space-x-2 pb-2 text-sm text-gray-700 pt-2">
-                      {photoDimensions[index]?.height > 150 && (
-                        <button className='hover:text-btc' onClick={() => toggleSize(index)}>{enlarged === index ? 'shrink' : 'enlarge'}</button>
-                      )}&nbsp;{'|'}
-                      <a href={photo} target='_blank' download className='hover:text-btc'>download</a>
-                    </div>
-                  </li>
-                ))}
-              </ul>}
-            </div>
-            <p className=" absolute bottom-0 text-center mx-auto mt-16 max-w-3xl text-sm  sm:text-md leading-8 text-gray-500 pb-2">
-              created by <a className='hover:text-btc ' href='https://twitter.com/galleonlabs' target='_blank'>@galleonlabs</a> (send us saylor memes)
-            </p>
+          </div>
+          
+          <h1 className="mt-6 text-3xl sm:text-4xl font-bold tracking-tight text-shadow-sm">
+            <span className="text-btc animate-pulse-btc inline-block">saylor</span> memes
+          </h1>
+          <p className="mt-2 text-lg text-gray-700">
+            high-quality, hand-picked, organic saylor content
+          </p>
+          
+          {/* Social Share Buttons */}
+          <div className="mt-4 flex justify-center space-x-2">
+            <TwitterShareButton
+              url={'https://saylormemes.com'}
+              title={'Top-tier @saylor memes'}
+              className="transition-transform duration-300 hover:scale-110">
+              <TwitterIcon size={36} round />
+            </TwitterShareButton>
+            <FacebookShareButton
+              url={'https://saylormemes.com'}
+              title={'Top-tier saylor memes'}
+              className="transition-transform duration-300 hover:scale-110">
+              <FacebookIcon size={36} round />
+            </FacebookShareButton>
+            <WhatsappShareButton
+              url={'https://saylormemes.com'}
+              title={'Top-tier saylor memes'}
+              className="transition-transform duration-300 hover:scale-110">
+              <WhatsappIcon size={36} round />
+            </WhatsappShareButton>
+          </div>
+        </header>
+        
+        {/* Tab Navigation */}
+        <div className="flex justify-center mb-8">
+          <div className="inline-flex rounded-lg p-1 bg-gray-200 shadow-inner">
+            <button
+              className={`px-6 py-2 rounded-lg transition-all duration-200 ${
+                contentType === 'videos' 
+                  ? 'bg-white shadow text-btc font-semibold'
+                  : 'hover:bg-white/50 text-gray-600'
+              }`}
+              onClick={() => setContentType('videos')}
+            >
+              videos
+            </button>
+            <button
+              className={`px-6 py-2 rounded-lg transition-all duration-200 ${
+                contentType === 'photos' 
+                  ? 'bg-white shadow text-btc font-semibold'
+                  : 'hover:bg-white/50 text-gray-600'
+              }`}
+              onClick={() => setContentType('photos')}
+            >
+              photos
+            </button>
           </div>
         </div>
+        
+        {/* Content Area */}
+        <main className="pb-16">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <div className="relative w-16 h-16">
+                <div className="absolute inset-0 rounded-full border-4 border-btc/20 border-t-btc animate-spin"></div>
+                <div className="absolute inset-0 rounded-full border-4 border-transparent border-r-btc/60 animate-spin" style={{ animationDuration: '1.5s' }}></div>
+              </div>
+              <p className="mt-4 text-lg text-btc/80">Loading {contentType}...</p>
+            </div>
+          ) : contentType === 'videos' ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {videos.length === 0 ? (
+                <div className="col-span-full text-center py-16">
+                  <p className="text-lg text-gray-500">No videos found</p>
+                </div>
+              ) : (
+                videos.map(video => (
+                  <div 
+                    key={video.id}
+                    className={`
+                      rounded-lg overflow-hidden bg-white shadow card-hover
+                      ${activeItem === video.id
+                        ? 'border-2 border-btc/70 shadow-lg ring-2 ring-btc/30 transform scale-[1.02]'
+                        : 'border border-gray-200'
+                      }
+                    `}
+                  >
+                    {/* Video Display */}
+                    <div 
+                      className="relative cursor-pointer overflow-hidden aspect-video bg-black"
+                      onClick={() => playVideo(video.id)}
+                    >
+                      {activeItem === video.id && video.videoUrl ? (
+                        <video
+                          className="w-full h-full object-contain"
+                          src={video.videoUrl}
+                          autoPlay
+                          controls
+                          playsInline
+                          controlsList="nodownload"
+                          onEnded={() => setActiveItem(null)}
+                        />
+                      ) : (
+                        <>
+                          <img
+                            src={video.thumbnailUrl}
+                            alt={video.title}
+                            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="bg-btc/70 rounded-full p-4 shadow-lg transform transition-transform duration-300 hover:scale-110">
+                              <svg viewBox="0 0 24 24" className="w-8 h-8 text-white">
+                                <path fill="currentColor" d="M8 5v14l11-7z"/>
+                              </svg>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    
+                    {/* Video Title & Controls */}
+                    <div className="p-3">
+                      <h3 className="font-medium text-gray-900 text-center truncate mb-2">
+                        {video.title}
+                      </h3>
+                      
+                      <div className="flex justify-center">
+                        <button
+                          className={`
+                            px-4 py-1.5 rounded-md text-sm font-medium transition-colors
+                            ${activeItem === video.id
+                              ? 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                              : 'bg-btc text-white hover:bg-btc-600'
+                            }
+                          `}
+                          onClick={() => playVideo(video.id)}
+                        >
+                          {activeItem === video.id ? 'stop' : 'play'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {photos.length === 0 ? (
+                <div className="col-span-full text-center py-16">
+                  <p className="text-lg text-gray-500">No photos found</p>
+                </div>
+              ) : (
+                photos.map((photoUrl, index) => (
+                  <div 
+                    key={photoUrl}
+                    className={`
+                      rounded-lg overflow-hidden bg-white shadow card-hover
+                      ${activeItem === photoUrl
+                        ? 'border-2 border-btc/70 shadow-lg ring-2 ring-btc/30 transform scale-[1.02]'
+                        : 'border border-gray-200'
+                      }
+                    `}
+                  >
+                    {/* Photo Display */}
+                    <div 
+                      className={`
+                        relative cursor-pointer overflow-hidden 
+                        ${activeItem === photoUrl ? 'max-h-none' : 'aspect-square'}
+                      `}
+                      onClick={() => viewPhoto(photoUrl)}
+                    >
+                      <img
+                        src={photoUrl}
+                        alt={`Saylor meme ${index}`}
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                        loading="lazy"
+                      />
+                      {!activeItem && (
+                        <div className="absolute bottom-2 right-2 bg-btc/70 rounded-full p-1.5 shadow-sm opacity-70 hover:opacity-100 transition-opacity">
+                          <svg className="w-4 h-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M3 8V6a3 3 0 013-3h8a3 3 0 013 3v8a3 3 0 01-3 3H9a3 3 0 01-3-3h1a2 2 0 002 2h5a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2h1z" />
+                            <path d="M5 10V8H1v8a3 3 0 003 3h8a3 3 0 01-3-3H6a1 1 0 01-1-1v-5z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Photo Controls */}
+                    <div className="p-3">
+                      <div className="flex justify-center space-x-3">
+                        <button
+                          className={`
+                            px-4 py-1.5 rounded-md text-sm font-medium transition-colors
+                            ${activeItem === photoUrl
+                              ? 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                              : 'bg-btc/90 text-white hover:bg-btc'
+                            }
+                          `}
+                          onClick={() => viewPhoto(photoUrl)}
+                        >
+                          {activeItem === photoUrl ? 'close' : 'view'}
+                        </button>
+                        
+                        <button
+                          className="px-4 py-1.5 rounded-md text-sm font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors"
+                          onClick={() => downloadPhoto(photoUrl)}
+                        >
+                          download
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </main>
+        
+        {/* Footer */}
+        <footer className=" bottom-4 inset-x-0 text-center">
+          <p className="text-sm text-gray-500">
+            created by <a href="https://twitter.com/davyjones0x" target="_blank" rel="noreferrer" className="text-btc/90 hover:text-btc font-medium">@davyjones0x</a> <span className="text-gray-400">(send me saylor memes)</span>
+          </p>
+        </footer>
+        
+        {/* Bitcoin watermark */}
+        <div className="fixed bottom-0 right-0 opacity-[0.03] pointer-events-none z-[-1]">
+          <svg className="w-64 h-64 text-btc animate-bitcoin-spin" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M11.5 11.5v-2.5c1.75 0 2.5.75 2.5 2.5h2.5c0-2.5-1.75-4.25-5-4.5v-2h-2v2c-1.5.25-2.5.75-3.25 1.5-.75.75-1 1.75-1 2.75 0 1.75.75 2.75 1.5 3.25.75.5 1.75 1 2.75 1.25v3c-1 0-2-.25-2.5-1-.5-.75-.5-1.5-.5-2h-2.5c0 1 0 2 .5 3s1.25 1.75 2.5 2.25v2h2v-2c3.5-.5 5.25-2.5 5.25-5.25 0-1.5-.5-2.75-1.5-3.5-1-.75-2-.75-3.25-1zm-1.5 2.75c-.5-.25-.75-.5-.75-1.25 0-.75.75-1.25 1.5-1.25v2.5h-.75zm3.75 4c0 1-.75 1.75-2.25 2v-3c.5.25 1 .25 1.5.5.5.25.75.75.75 1.5z"/>
+          </svg>
+        </div>
+        
+        {/* Bitcoin grain overlay */}
+        <div className="fixed inset-0 pointer-events-none opacity-[0.02] z-[-1]" 
+             style={{ 
+               backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M11.5 11.5v-2.5c1.75 0 2.5.75 2.5 2.5h2.5c0-2.5-1.75-4.25-5-4.5v-2h-2v2c-1.5.25-2.5.75-3.25 1.5-.75.75-1 1.75-1 2.75 0 1.75.75 2.75 1.5 3.25.75.5 1.75 1 2.75 1.25v3c-1 0-2-.25-2.5-1-.5-.75-.5-1.5-.5-2h-2.5c0 1 0 2 .5 3s1.25 1.75 2.5 2.25v2h2v-2c3.5-.5 5.25-2.5 5.25-5.25 0-1.5-.5-2.75-1.5-3.5-1-.75-2-.75-3.25-1zm-1.5 2.75c-.5-.25-.75-.5-.75-1.25 0-.75.75-1.25 1.5-1.25v2.5h-.75zm3.75 4c0 1-.75 1.75-2.25 2v-3c.5.25 1 .25 1.5.5.5.25.75.75.75 1.5z\' fill=\'%23FF9900\' fill-opacity=\'0.3\' transform=\'rotate(30 50 50) scale(0.25)\' /%3E%3C/svg%3E")',
+               backgroundSize: '150px 150px'
+             }}
+        ></div>
       </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
