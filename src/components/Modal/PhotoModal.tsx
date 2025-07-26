@@ -22,41 +22,42 @@ export const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-paper/95 backdrop-blur-sm flex items-center justify-center z-50 p-8"
       onClick={onClose}
     >
       <div
-        className="relative max-w-4xl max-h-[90vh]"
+        className="relative max-w-5xl"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute -top-10 right-0 text-white hover:text-gray-300 transition-colors"
-          aria-label="Close modal"
+          className="absolute -top-10 right-0 text-ink-lighter hover:text-ink"
+          aria-label="Close"
         >
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
-        <img
-          src={photo.url}
-          alt={photo.title}
-          className="max-w-full max-h-[90vh] object-contain rounded"
-        />
-        <div className="mt-4 text-center">
-          <p className="text-white text-lg font-medium">{photo.title}</p>
-          <a
-            href={photo.url}
-            download
-            className="inline-block mt-2 px-4 py-2 bg-btc text-white rounded-full hover:bg-btc-dark transition-colors"
-          >
-            Download
-          </a>
+        
+        <div className="figure">
+          <div className="figure-content">
+            <img
+              src={photo.url}
+              alt={photo.title}
+              className="max-w-full max-h-[80vh] object-contain"
+            />
+          </div>
+          <p className="figure-caption">{photo.title}</p>
+          
+          <div className="mt-4 text-center">
+            <a
+              href={photo.url}
+              download
+              className="btn-secondary"
+            >
+              Download
+            </a>
+          </div>
         </div>
       </div>
     </div>

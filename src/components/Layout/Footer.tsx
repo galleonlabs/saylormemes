@@ -2,19 +2,23 @@ import React from 'react';
 
 export const Footer: React.FC = () => {
   return (
-    <div className="mt-8 pt-4 border-t border-gray-200 text-center text-sm text-gray-500">
-      <p>
-        created by{' '}
-        <a
-          className="text-btc hover:underline"
-          href="https://twitter.com/davyjones0x"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          @davyjones0x
-        </a>{' '}
-        (send me saylor memes)
-      </p>
-    </div>
+    <footer className="mt-16 pt-8 border-t border-ink/10">
+      <div className="text-center">
+        <p className="text-footnote text-ink-lighter">
+          Curated by{' '}
+          <a
+            className="text-btc"
+            href="https://twitter.com/davyjones0x"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            @davyjones0x
+          </a>
+        </p>
+        <p className="text-footnote text-ink-lightest mt-1">
+          © {new Date().getFullYear()} · Send me your best Saylor memes
+        </p>
+      </div>
+    </footer>
   );
 };

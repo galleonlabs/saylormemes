@@ -75,172 +75,98 @@ export const VideoCard: React.FC<VideoCardProps> = ({
     });
   };
 
-  const handleFullscreen = async () => {
-    if (!video.videoUrl && !isLoadingVideo) {
-      setIsLoadingVideo(true);
-      try {
-        const videoUrl = await onLoadVideo(video.fileName);
-        video.videoUrl = videoUrl;
-      } catch (err) {
-        console.error('Failed to load video:', err);
-        setError(true);
-        setIsLoadingVideo(false);
-        return;
-      }
-      setIsLoadingVideo(false);
-    }
-    
-    // Wait for video element to be ready
-    setTimeout(() => {
-      if (videoRef.current && videoRef.current.requestFullscreen) {
-        videoRef.current.requestFullscreen();
-      }
-    }, 100);
-  };
-
   return (
     <>
-      <div
-        className={`staggered-item bg-white rounded-xl shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1 border border-gray-200 hover:border-btc/50 ${
-          isEnlarged ? 'hidden' : ''
-        }`}
-        style={{ animationDelay: `${index * 50}ms` }}
-      >
-        <div className="aspect-video relative bg-gray-900 rounded-t-xl overflow-hidden">
-          {!video.videoUrl ? (
-            <>
-              <img
-                src={video.thumbnailUrl}
-                alt={`${video.title} thumbnail`}
-                className="w-full h-full object-contain"
-              />
-              <button
-                onClick={handlePlayClick}
-                disabled={isLoadingVideo}
-                className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 hover:bg-opacity-40 transition-opacity"
-                aria-label={`Play ${video.title}`}
-              >
-                {isLoadingVideo ? (
-                  <div className="spinner" />
-                ) : error ? (
-                  <div className="text-white text-center p-4">
-                    <p className="mb-2">Failed to load video</p>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handlePlayClick();
-                      }}
-                      className="px-3 py-1 bg-btc text-white rounded hover:bg-btc-dark"
-                    >
-                      Retry
-                    </button>
-                  </div>
+      <div className="media-item flex items-start">
+        <span className="media-item-number">{String(index + 1).padStart(3, '0')}</span>
+        
+        <div className="media-item-content">
+          <div className="flex items-start gap-4">
+            <div className="w-32 h-20 flex-shrink-0">
+              <div className="figure-content h-full">
+                {!video.videoUrl ? (
+                  <img
+                    src={video.thumbnailUrl}
+                    alt={`${video.title} thumbnail`}
+                    className="w-full h-full object-cover cursor-pointer"
+                    onClick={handlePlayClick}
+                  />
                 ) : (
-                  <svg className="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  <video
+                    ref={videoRef}
+                    src={video.videoUrl}
+                    className="w-full h-full object-contain"
+                    controls
+                    playsInline
+                  />
                 )}
-              </button>
-            </>
-          ) : (
-            <video
-              ref={videoRef}
-              src={video.videoUrl}
-              className="w-full h-full object-contain"
-              controls
-              playsInline
-              onClick={(e) => e.stopPropagation()}
-              onError={() => setError(true)}
-            />
-          )}
-        </div>
-
-        <div className="p-4">
-          <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">{video.title}</h3>
-
-          {video.tags && video.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-3">
-              {video.tags.map((tag, tagIndex) => (
-                <span
-                  key={tagIndex}
-                  className="inline-block px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded-full"
-                >
-                  {tag}
-                </span>
-              ))}
+              </div>
             </div>
-          )}
-
-          <div className="flex gap-2">
-            <button
-              onClick={handleEnlarge}
-              disabled={isLoadingVideo}
-              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                />
-              </svg>
-              Enlarge
-            </button>
-            <button
-              onClick={handleFullscreen}
-              disabled={isLoadingVideo}
-              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                />
-              </svg>
-              Fullscreen
-            </button>
+            
+            <div className="flex-1">
+              <h3 className="media-item-title">{video.title}</h3>
+              <div className="media-item-meta">
+                {video.tags && video.tags.length > 0 && (
+                  <span>Tags: {video.tags.join(', ')}</span>
+                )}
+              </div>
+              
+              <div className="mt-2 flex gap-2">
+                {!video.videoUrl && (
+                  <button onClick={handlePlayClick} className="btn-text" disabled={isLoadingVideo}>
+                    {isLoadingVideo ? 'Loading...' : 'Play'}
+                  </button>
+                )}
+                <button onClick={handleEnlarge} className="btn-text">
+                  View larger
+                </button>
+              </div>
+              
+              {error && (
+                <p className="text-footnote text-red-600 mt-2">
+                  Failed to load video. Please try again.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
       {isEnlarged && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4">
-          <div className="relative w-full max-w-4xl">
+        <div className="fixed inset-0 bg-paper/95 backdrop-blur-sm flex items-center justify-center z-50 p-8">
+          <div className="relative max-w-4xl w-full">
             <button
               onClick={handleEnlarge}
-              className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
-              aria-label="Close enlarged view"
+              className="absolute -top-10 right-0 text-ink-lighter hover:text-ink"
+              aria-label="Close"
             >
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            {video.videoUrl ? (
-              <video
-                src={video.videoUrl}
-                className="w-full rounded"
-                controls
-                autoPlay
-                playsInline
-              />
-            ) : (
-              <div className="flex items-center justify-center h-96">
-                <div className="spinner" />
+            
+            <div className="figure">
+              <div className="figure-content">
+                {video.videoUrl ? (
+                  <video
+                    src={video.videoUrl}
+                    className="w-full"
+                    controls
+                    autoPlay
+                    playsInline
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-96">
+                    <div className="loading-dots">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-            <p className="text-white text-center mt-4 text-lg">{video.title}</p>
+              <p className="figure-caption">Figure {index + 1}: {video.title}</p>
+            </div>
           </div>
         </div>
       )}

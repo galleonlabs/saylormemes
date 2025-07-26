@@ -1,55 +1,135 @@
-/* Custom styles for SaylorMemes app */
+/* Whitepaper theme styles */
 
-/* Custom video player styles */
-video::-webkit-media-controls-timeline {
-  cursor: pointer;
+/* Media item styles */
+.media-item {
+  @apply border-t border-ink/10 py-4 first:border-t-0;
 }
 
-/* Loading spinner */
-.spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid #f3f4f6;
-  border-top-color: #FF9900;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.media-item-number {
+  @apply text-footnote text-ink-lighter font-mono mr-4;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.media-item-content {
+  @apply flex-1;
 }
 
-/* Custom scrollbar */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+.media-item-title {
+  @apply font-serif text-body text-ink mb-1;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+.media-item-meta {
+  @apply text-footnote text-ink-lighter;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #FF9900;
-  border-radius: 10px;
+/* Figure styles */
+.figure {
+  @apply my-8;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #e68a00;
+.figure-content {
+  @apply border border-ink/10 p-1 bg-paper-light;
 }
 
-/* Shimmer loading effect */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+.figure-caption {
+  @apply text-citation text-ink-lighter mt-2 text-center;
 }
 
-.shimmer {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+/* Table of contents */
+.toc {
+  @apply border-l-2 border-btc pl-4 py-2 my-8;
+}
+
+.toc-item {
+  @apply text-body text-ink mb-2 last:mb-0;
+}
+
+.toc-item:hover {
+  @apply text-btc;
+}
+
+/* Index styles */
+.index-letter {
+  @apply font-serif text-title text-ink mt-8 mb-4 border-b border-ink/10 pb-2;
+}
+
+.index-entries {
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-2 mb-8;
+}
+
+.index-entry {
+  @apply text-body text-ink-light;
+}
+
+/* Video player */
+video {
+  @apply w-full bg-black;
+}
+
+/* Loading skeleton */
+.skeleton {
+  @apply bg-ink/5 animate-pulse;
+}
+
+/* Empty state */
+.empty-state {
+  @apply text-center py-16;
+}
+
+.empty-state-message {
+  @apply text-body text-ink-lighter mb-4;
+}
+
+/* Navigation tabs */
+.nav-tabs {
+  @apply flex border-b border-ink/10 mb-8;
+}
+
+.nav-tab {
+  @apply px-4 py-2 text-body text-ink-light border-b-2 border-transparent transition-colors;
+  @apply hover:text-ink hover:border-ink/20;
+}
+
+.nav-tab.active {
+  @apply text-ink border-btc;
+}
+
+/* Pagination */
+.pagination {
+  @apply flex items-center justify-center space-x-2 mt-12;
+}
+
+.page-number {
+  @apply px-3 py-1 text-footnote text-ink-light border border-ink/10 rounded;
+  @apply hover:border-ink/20 hover:bg-ink/5;
+}
+
+.page-number.active {
+  @apply bg-btc text-paper border-btc;
+}
+
+/* Footnote references */
+.footnote-ref {
+  @apply text-footnote align-super text-btc;
+}
+
+/* Citation blocks */
+.citation-block {
+  @apply border-l-2 border-ink/10 pl-4 my-6 italic text-ink-light;
+}
+
+/* Metadata lists */
+.metadata-list {
+  @apply space-y-1 text-footnote;
+}
+
+.metadata-item {
+  @apply flex;
+}
+
+.metadata-label {
+  @apply text-ink-lighter mr-2;
+}
+
+.metadata-value {
+  @apply text-ink;
 }

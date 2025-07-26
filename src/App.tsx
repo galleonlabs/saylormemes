@@ -1,10 +1,6 @@
 import './App.css';
-import saylor from './assets/saylor.jpg';
-import btc from './assets/btc.png';
 import { useState, useEffect } from 'react';
-import { TwitterShareButton, FacebookShareButton, TwitterIcon, FacebookIcon, WhatsappIcon, WhatsappShareButton } from 'react-share';
 import { 
-  Header, 
   Footer, 
   MediaGrid, 
   SearchBar, 
@@ -68,92 +64,90 @@ function App() {
     });
   };
 
-  const shareUrl = 'https://saylormemes.com';
-  const shareTitle = 'Check out the ultimate collection of Michael Saylor memes!';
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8">
-          {/* Hero Section */}
-          <div className="text-center mb-8">
-            <div className="flex justify-center items-center -space-x-4 mb-6">
-              <img
-                className="relative z-20 h-20 w-20 sm:h-28 sm:w-28 rounded-full ring-4 ring-white shadow-xl"
-                src={saylor}
-                alt="Michael Saylor"
-                loading="eager"
-              />
-              <img
-                className="relative z-10 h-20 w-20 sm:h-28 sm:w-28 rounded-full ring-4 ring-white shadow-xl animate-bounce-slow"
-                src={btc}
-                alt="Bitcoin"
-                loading="eager"
-              />
+    <div className="min-h-screen bg-paper">
+      <div className="document-container">
+        {/* Header */}
+        <header className="text-center mb-12">
+          <h1 className="font-serif text-display text-ink mb-2">
+            The Saylor Meme Collection
+          </h1>
+          <p className="text-body text-ink-lighter">
+            A curated anthology of Michael Saylor's Bitcoin wisdom
+          </p>
+          <div className="mt-4">
+            <span className="text-footnote text-ink-lightest">
+              Document version 2.0 · {new Date().getFullYear()}
+            </span>
+          </div>
+        </header>
+
+        {/* Navigation */}
+        <nav className="nav-tabs">
+          <button
+            onClick={() => setCurrentSelection('videos')}
+            className={`nav-tab ${currentSelection === 'videos' ? 'active' : ''}`}
+          >
+            Videos ({videos.length})
+          </button>
+          <button
+            onClick={() => setCurrentSelection('photos')}
+            className={`nav-tab ${currentSelection === 'photos' ? 'active' : ''}`}
+          >
+            Images ({photos.length})
+          </button>
+        </nav>
+
+        {/* Table of Contents */}
+        <div className="toc">
+          <h2 className="font-serif text-heading text-ink mb-3">Contents</h2>
+          <div className="space-y-1">
+            <div className="toc-item">
+              <span className="text-ink-lighter">I.</span> Search & Filter
             </div>
-            
-            <Header />
-            
-            {/* Social Sharing */}
-            <div className="flex justify-center gap-2 mb-6">
-              <TwitterShareButton url={shareUrl} title={shareTitle}>
-                <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
-                  <TwitterIcon size={20} round />
-                  <span className="text-sm font-medium">Share</span>
-                </div>
-              </TwitterShareButton>
-              <FacebookShareButton url={shareUrl} title={shareTitle}>
-                <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
-                  <FacebookIcon size={20} round />
-                  <span className="text-sm font-medium">Share</span>
-                </div>
-              </FacebookShareButton>
-              <WhatsappShareButton url={shareUrl} title={shareTitle}>
-                <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
-                  <WhatsappIcon size={20} round />
-                  <span className="text-sm font-medium">Share</span>
-                </div>
-              </WhatsappShareButton>
+            <div className="toc-item">
+              <span className="text-ink-lighter">II.</span> {currentSelection === 'videos' ? 'Video' : 'Image'} Catalog
+            </div>
+            <div className="toc-item">
+              <span className="text-ink-lighter">III.</span> Appendix
             </div>
           </div>
+        </div>
 
-          {/* Media Type Selector */}
-          <div className="flex justify-center mb-8">
-            <div className="inline-flex rounded-full bg-gray-100 p-1">
-              <button
-                onClick={() => setCurrentSelection('videos')}
-                className={`px-6 py-2 rounded-full font-medium transition-all duration-200 ${
-                  currentSelection === 'videos'
-                    ? 'bg-btc text-white shadow-md'
-                    : 'text-gray-700 hover:text-gray-900'
-                }`}
-              >
-                Videos ({videos.length})
-              </button>
-              <button
-                onClick={() => setCurrentSelection('photos')}
-                className={`px-6 py-2 rounded-full font-medium transition-all duration-200 ${
-                  currentSelection === 'photos'
-                    ? 'bg-btc text-white shadow-md'
-                    : 'text-gray-700 hover:text-gray-900'
-                }`}
-              >
-                Photos ({photos.length})
-              </button>
-            </div>
-          </div>
-
-          {/* Search and Filters */}
-          <div className="max-w-2xl mx-auto mb-8 space-y-4">
+        {/* Search Section */}
+        <section className="section">
+          <h2 className="font-serif text-title text-ink mb-6">
+            I. Search & Filter
+          </h2>
+          
+          <div className="subsection">
             <SearchBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
-            <TagFilter 
-              availableTags={availableTags} 
-              activeFilter={activeFilter} 
-              onFilterChange={setActiveFilter} 
-            />
+            
+            {availableTags.length > 1 && (
+              <div className="mt-4">
+                <p className="text-footnote text-ink-lighter mb-2">Filter by category:</p>
+                <TagFilter 
+                  availableTags={availableTags} 
+                  activeFilter={activeFilter} 
+                  onFilterChange={setActiveFilter} 
+                />
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Content Section */}
+        <section className="section">
+          <h2 className="font-serif text-title text-ink mb-6">
+            II. {currentSelection === 'videos' ? 'Video' : 'Image'} Catalog
+          </h2>
+          
+          <div className="mb-4 text-footnote text-ink-lighter">
+            Showing {filteredContent.length} of {currentSelection === 'videos' ? videos.length : photos.length} items
+            {searchQuery && ` matching "${searchQuery}"`}
+            {activeFilter !== 'all' && ` in category "${activeFilter}"`}
           </div>
 
-          {/* Content Area */}
           {isLoading ? (
             <LoadingSpinner />
           ) : filteredContent.length === 0 ? (
@@ -169,9 +163,43 @@ function App() {
               logAnalyticsEvent={logAnalyticsEvent}
             />
           )}
+        </section>
 
-          <Footer />
-        </div>
+        {/* Appendix */}
+        <section className="section">
+          <h2 className="font-serif text-title text-ink mb-6">
+            III. Appendix
+          </h2>
+          
+          <div className="subsection">
+            <h3 className="font-serif text-heading text-ink mb-3">About this Collection</h3>
+            <p className="paragraph">
+              This collection represents a comprehensive archive of Michael Saylor's most memorable 
+              moments discussing Bitcoin. Each piece has been carefully cataloged and tagged for 
+              easy reference and discovery.
+            </p>
+          </div>
+
+          <div className="subsection">
+            <h3 className="font-serif text-heading text-ink mb-3">Usage Guidelines</h3>
+            <p className="paragraph">
+              All content is provided for educational and entertainment purposes. 
+              Please respect intellectual property rights when sharing or using these materials.
+            </p>
+          </div>
+
+          <div className="subsection">
+            <h3 className="font-serif text-heading text-ink mb-3">Technical Details</h3>
+            <ul className="bullet-list">
+              <li>Format: MP4 (video), PNG/JPG (images)</li>
+              <li>Storage: Cloud-based distribution</li>
+              <li>Metadata: Title, category tags</li>
+              <li>Last updated: {new Date().toLocaleDateString()}</li>
+            </ul>
+          </div>
+        </section>
+
+        <Footer />
       </div>
 
       {/* Photo Modal */}

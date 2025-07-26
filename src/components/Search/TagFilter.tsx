@@ -8,14 +8,10 @@ interface TagFilterProps {
 
 export const TagFilter: React.FC<TagFilterProps> = ({ availableTags, activeFilter, onFilterChange }) => {
   return (
-    <div className="flex flex-wrap gap-2 justify-center mb-6">
+    <div className="flex flex-wrap gap-2">
       <button
         onClick={() => onFilterChange('all')}
-        className={`px-3 py-1 rounded-full text-sm transition-all duration-200 ${
-          activeFilter === 'all'
-            ? 'bg-btc text-white shadow-md'
-            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-        }`}
+        className={`tag ${activeFilter === 'all' ? 'tag-active' : ''}`}
         aria-pressed={activeFilter === 'all'}
       >
         All
@@ -24,11 +20,7 @@ export const TagFilter: React.FC<TagFilterProps> = ({ availableTags, activeFilte
         <button
           key={tag}
           onClick={() => onFilterChange(tag)}
-          className={`px-3 py-1 rounded-full text-sm transition-all duration-200 ${
-            activeFilter === tag
-              ? 'bg-btc text-white shadow-md'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
+          className={`tag ${activeFilter === tag ? 'tag-active' : ''}`}
           aria-pressed={activeFilter === tag}
         >
           {tag}
