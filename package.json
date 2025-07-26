@@ -13,8 +13,8 @@
   "dependencies": {
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
-    "firebase": "^10.5.2",
-    "firebase-admin": "^11.11.0",
+    "firebase": "^11.10.0",
+    "firebase-admin": "^13.0.2",
     "localforage": "^1.10.0",
     "match-sorter": "^6.3.1",
     "react": "^18.2.0",
@@ -25,18 +25,20 @@
     "sort-by": "^1.2.0"
   },
   "devDependencies": {
-    "@types/react": "^18.2.15",
-    "@types/react-dom": "^18.2.7",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@typescript-eslint/eslint-plugin": "^8.18.2",
+    "@typescript-eslint/parser": "^8.18.2",
     "@vitejs/plugin-react-swc": "^3.3.2",
     "autoprefixer": "^10.4.16",
-    "eslint": "^8.45.0",
+    "eslint": "^8.57.1",
+    "prettier": "^3.4.1",
+    "prettier-plugin-tailwindcss": "^0.6.10",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.5",
-    "typescript": "^5.0.2",
-    "vite": "^4.4.5"
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11"
   }
 }
