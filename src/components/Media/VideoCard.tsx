@@ -55,19 +55,47 @@ export const VideoCard: React.FC<VideoCardProps> = ({
     });
   };
 
-  const handleEnlarge = () => {
+  const handleEnlarge = async () => {
+    if (!video.videoUrl && !isLoadingVideo) {
+      setIsLoadingVideo(true);
+      try {
+        const videoUrl = await onLoadVideo(video.fileName);
+        video.videoUrl = videoUrl;
+      } catch (err) {
+        console.error('Failed to load video:', err);
+        setError(true);
+        setIsLoadingVideo(false);
+        return;
+      }
+      setIsLoadingVideo(false);
+    }
     setIsEnlarged(!isEnlarged);
     logAnalyticsEvent('enlarge_video', {
       video_title: video.title,
     });
   };
 
-  const handleFullscreen = () => {
-    if (videoRef.current) {
-      if (videoRef.current.requestFullscreen) {
+  const handleFullscreen = async () => {
+    if (!video.videoUrl && !isLoadingVideo) {
+      setIsLoadingVideo(true);
+      try {
+        const videoUrl = await onLoadVideo(video.fileName);
+        video.videoUrl = videoUrl;
+      } catch (err) {
+        console.error('Failed to load video:', err);
+        setError(true);
+        setIsLoadingVideo(false);
+        return;
+      }
+      setIsLoadingVideo(false);
+    }
+    
+    // Wait for video element to be ready
+    setTimeout(() => {
+      if (videoRef.current && videoRef.current.requestFullscreen) {
         videoRef.current.requestFullscreen();
       }
-    }
+    }, 100);
   };
 
   return (
@@ -147,42 +175,42 @@ export const VideoCard: React.FC<VideoCardProps> = ({
             </div>
           )}
 
-          {video.videoUrl && (
-            <div className="flex gap-2">
-              <button
-                onClick={handleEnlarge}
-                className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                  />
-                </svg>
-                Enlarge
-              </button>
-              <button
-                onClick={handleFullscreen}
-                className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                  />
-                </svg>
-                Fullscreen
-              </button>
-            </div>
-          )}
+          <div className="flex gap-2">
+            <button
+              onClick={handleEnlarge}
+              disabled={isLoadingVideo}
+              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                />
+              </svg>
+              Enlarge
+            </button>
+            <button
+              onClick={handleFullscreen}
+              disabled={isLoadingVideo}
+              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                />
+              </svg>
+              Fullscreen
+            </button>
+          </div>
         </div>
       </div>
 
-      {isEnlarged && video.videoUrl && (
+      {isEnlarged && (
         <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4">
           <div className="relative w-full max-w-4xl">
             <button
@@ -199,13 +227,19 @@ export const VideoCard: React.FC<VideoCardProps> = ({
                 />
               </svg>
             </button>
-            <video
-              src={video.videoUrl}
-              className="w-full rounded"
-              controls
-              autoPlay
-              playsInline
-            />
+            {video.videoUrl ? (
+              <video
+                src={video.videoUrl}
+                className="w-full rounded"
+                controls
+                autoPlay
+                playsInline
+              />
+            ) : (
+              <div className="flex items-center justify-center h-96">
+                <div className="spinner" />
+              </div>
+            )}
             <p className="text-white text-center mt-4 text-lg">{video.title}</p>
           </div>
         </div>
