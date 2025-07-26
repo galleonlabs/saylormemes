@@ -1,13 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Video } from '../../types';
-import {
-  FacebookShareButton,
-  TwitterShareButton,
-  WhatsappShareButton,
-  FacebookIcon,
-  TwitterIcon,
-  WhatsappIcon,
-} from 'react-share';
 
 interface VideoCardProps {
   video: Video;
@@ -24,14 +16,10 @@ export const VideoCard: React.FC<VideoCardProps> = ({
   onTogglePlay,
   logAnalyticsEvent,
 }) => {
-  const [showShareMenu, setShowShareMenu] = useState(false);
   const [isEnlarged, setIsEnlarged] = useState(false);
   const [isLoadingVideo, setIsLoadingVideo] = useState(false);
   const [error, setError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-
-  const shareUrl = window.location.href;
-  const shareTitle = `Check out this Michael Saylor meme: ${video.title}`;
 
   useEffect(() => {
     if (videoRef.current) {
@@ -85,12 +73,12 @@ export const VideoCard: React.FC<VideoCardProps> = ({
   return (
     <>
       <div
-        className={`staggered-item bg-white rounded-xl shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1 border border-gray-200 hover:border-btc/50 ${
+        className={`staggered-item bg-white rounded-xl shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1 border border-gray-200 hover:border-btc/50 ${
           isEnlarged ? 'hidden' : ''
         }`}
         style={{ animationDelay: `${index * 50}ms` }}
       >
-        <div className="aspect-video relative bg-gray-900">
+        <div className="aspect-video relative bg-gray-900 rounded-t-xl overflow-hidden">
           {!video.videoUrl ? (
             <>
               <img
@@ -159,45 +147,10 @@ export const VideoCard: React.FC<VideoCardProps> = ({
             </div>
           )}
 
-          <div className="flex gap-2 justify-between flex-wrap">
+          {video.videoUrl && (
             <div className="flex gap-2">
-              {video.videoUrl && (
-                <>
-                  <button
-                    onClick={handleEnlarge}
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                      />
-                    </svg>
-                    Enlarge
-                  </button>
-                  <button
-                    onClick={handleFullscreen}
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                      />
-                    </svg>
-                    Fullscreen
-                  </button>
-                </>
-              )}
-            </div>
-
-            <div className="relative">
               <button
-                onClick={() => setShowShareMenu(!showShareMenu)}
+                onClick={handleEnlarge}
                 className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -205,36 +158,27 @@ export const VideoCard: React.FC<VideoCardProps> = ({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m9.632 4.316C18.114 15.062 18 15.518 18 16c0 .482.114.938.316 1.342m0-2.684a3 3 0 100 2.684M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
                   />
                 </svg>
-                Share
+                Enlarge
               </button>
-
-              {showShareMenu && (
-                <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-lg shadow-xl z-20 border border-gray-200">
-                  <FacebookShareButton url={shareUrl} title={shareTitle} className="w-full">
-                    <div className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50">
-                      <FacebookIcon size={20} round />
-                      <span className="text-sm">Facebook</span>
-                    </div>
-                  </FacebookShareButton>
-                  <TwitterShareButton url={shareUrl} title={shareTitle} className="w-full">
-                    <div className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50">
-                      <TwitterIcon size={20} round />
-                      <span className="text-sm">Twitter</span>
-                    </div>
-                  </TwitterShareButton>
-                  <WhatsappShareButton url={shareUrl} title={shareTitle} className="w-full">
-                    <div className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50">
-                      <WhatsappIcon size={20} round />
-                      <span className="text-sm">WhatsApp</span>
-                    </div>
-                  </WhatsappShareButton>
-                </div>
-              )}
+              <button
+                onClick={handleFullscreen}
+                className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                  />
+                </svg>
+                Fullscreen
+              </button>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
