@@ -22,39 +22,37 @@ export const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="relative max-w-4xl max-h-[90vh]"
+        className="relative max-w-5xl max-h-[90vh] animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute -top-10 right-0 text-white hover:text-gray-300 transition-colors"
+          className="absolute -top-12 right-0 text-white/80 hover:text-white transition-all duration-250 p-2 rounded-full hover:bg-white/10"
           aria-label="Close modal"
         >
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
         <img
           src={photo.url}
           alt={photo.title}
-          className="max-w-full max-h-[90vh] object-contain rounded"
+          className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-elevated"
         />
-        <div className="mt-4 text-center">
-          <p className="text-white text-lg font-medium">{photo.title}</p>
+        <div className="mt-6 text-center animate-slide-up">
+          <p className="text-white text-xl font-semibold mb-4">{photo.title}</p>
           <a
             href={photo.url}
             download
-            className="inline-block mt-2 px-4 py-2 bg-btc text-white rounded-full hover:bg-btc-dark transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-btc text-white font-medium rounded-xl hover:bg-btc-dark transition-all duration-250 hover:shadow-elevated active:scale-95"
           >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+            </svg>
             Download
           </a>
         </div>

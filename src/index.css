@@ -1,26 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-html {
-  font-family: monospace;
-  scroll-behavior: smooth;
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply m-0 min-h-screen bg-neutral-50 text-neutral-900 antialiased;
+  }
+
+  * {
+    @apply border-neutral-200;
+  }
 }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  background-color: #f9fafb;
-  color: #111827;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+/* Custom component styles */
+@layer components {
+  .btn-primary {
+    @apply bg-btc text-white font-medium px-6 py-2.5 rounded-xl transition-all duration-250 hover:bg-btc-dark hover:shadow-elevated active:scale-95;
+  }
 
-/* Handle smooth transitions */
-.transition-all {
-  transition-property: all;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+  .btn-secondary {
+    @apply bg-neutral-100 text-neutral-700 font-medium px-6 py-2.5 rounded-xl transition-all duration-250 hover:bg-neutral-200 hover:shadow-subtle active:scale-95;
+  }
+
+  .card {
+    @apply bg-white rounded-2xl shadow-card transition-all duration-350 hover:shadow-card-hover;
+  }
 }
 
 /* Improved button hover states */
@@ -28,24 +38,22 @@ button {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Improved scrollbar */
+/* Modern scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
+  @apply bg-neutral-100 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #FF9900;
-  border-radius: 10px;
+  @apply bg-btc-light rounded-full transition-colors;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #e68a00;
+  @apply bg-btc;
 }
 
 /* Video player styles */
@@ -53,21 +61,15 @@ video:focus {
   outline: none;
 }
 
-/* Card animation */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Modern animations */
+.staggered-item {
+  @apply opacity-0 animate-slide-up;
+  animation-fill-mode: forwards;
 }
 
-.staggered-item {
-  opacity: 0;
-  animation: fadeIn 0.3s ease-out forwards;
+/* Smooth focus states */
+:focus-visible {
+  @apply outline-none ring-2 ring-btc ring-offset-2 ring-offset-white;
 }
 
 /* Spinner animation */
@@ -85,14 +87,28 @@ video:focus {
   transform: scale(1.1);
 }
 
-/* Mobile touch improvements */
+/* Mobile optimizations */
 @media (max-width: 640px) {
   button, a {
-    padding: 0.5rem;
-    min-height: 2.5rem;
+    @apply p-3 min-h-[44px]; /* iOS touch target */
   }
   
   input {
     font-size: 16px; /* Prevent iOS zoom */
+  }
+}
+
+/* Utilities */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .gradient-btc {
+    @apply bg-gradient-to-r from-btc-light to-btc;
+  }
+  
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
   }
 }

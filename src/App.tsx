@@ -72,20 +72,20 @@ function App() {
   const shareTitle = 'Check out the ultimate collection of Michael Saylor memes!';
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-elevated p-6 sm:p-10 animate-fade-in">
           {/* Hero Section */}
-          <div className="text-center mb-8">
-            <div className="flex justify-center items-center -space-x-4 mb-6">
+          <div className="text-center mb-10">
+            <div className="flex justify-center items-center -space-x-6 mb-8">
               <img
-                className="relative z-20 h-20 w-20 sm:h-28 sm:w-28 rounded-full ring-4 ring-white shadow-xl"
+                className="relative z-20 h-24 w-24 sm:h-32 sm:w-32 rounded-full ring-4 ring-white shadow-elevated transform transition-transform duration-500 hover:scale-105"
                 src={saylor}
                 alt="Michael Saylor"
                 loading="eager"
               />
               <img
-                className="relative z-10 h-20 w-20 sm:h-28 sm:w-28 rounded-full ring-4 ring-white shadow-xl animate-bounce-slow"
+                className="relative z-10 h-24 w-24 sm:h-32 sm:w-32 rounded-full ring-4 ring-white shadow-elevated animate-bounce-slow"
                 src={btc}
                 alt="Bitcoin"
                 loading="eager"
@@ -95,47 +95,47 @@ function App() {
             <Header />
             
             {/* Social Sharing */}
-            <div className="flex justify-center gap-2 mb-6">
+            <div className="flex justify-center gap-3 mt-6">
               <TwitterShareButton url={shareUrl} title={shareTitle}>
-                <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
+                <div className="flex items-center gap-2 px-5 py-2.5 bg-neutral-100 rounded-xl transition-all duration-250 hover:bg-neutral-200 hover:shadow-subtle hover:-translate-y-0.5 active:scale-95">
                   <TwitterIcon size={20} round />
-                  <span className="text-sm font-medium">Share</span>
+                  <span className="text-sm font-medium text-neutral-700">Share</span>
                 </div>
               </TwitterShareButton>
               <FacebookShareButton url={shareUrl} title={shareTitle}>
-                <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
+                <div className="flex items-center gap-2 px-5 py-2.5 bg-neutral-100 rounded-xl transition-all duration-250 hover:bg-neutral-200 hover:shadow-subtle hover:-translate-y-0.5 active:scale-95">
                   <FacebookIcon size={20} round />
-                  <span className="text-sm font-medium">Share</span>
+                  <span className="text-sm font-medium text-neutral-700">Share</span>
                 </div>
               </FacebookShareButton>
               <WhatsappShareButton url={shareUrl} title={shareTitle}>
-                <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
+                <div className="flex items-center gap-2 px-5 py-2.5 bg-neutral-100 rounded-xl transition-all duration-250 hover:bg-neutral-200 hover:shadow-subtle hover:-translate-y-0.5 active:scale-95">
                   <WhatsappIcon size={20} round />
-                  <span className="text-sm font-medium">Share</span>
+                  <span className="text-sm font-medium text-neutral-700">Share</span>
                 </div>
               </WhatsappShareButton>
             </div>
           </div>
 
           {/* Media Type Selector */}
-          <div className="flex justify-center mb-8">
-            <div className="inline-flex rounded-full bg-gray-100 p-1">
+          <div className="flex justify-center mb-10 mt-10">
+            <div className="inline-flex rounded-2xl bg-neutral-100 p-1.5">
               <button
                 onClick={() => setCurrentSelection('videos')}
-                className={`px-6 py-2 rounded-full font-medium transition-all duration-200 ${
+                className={`px-8 py-3 rounded-xl font-semibold transition-all duration-350 ${
                   currentSelection === 'videos'
-                    ? 'bg-btc text-white shadow-md'
-                    : 'text-gray-700 hover:text-gray-900'
+                    ? 'bg-white text-neutral-900 shadow-subtle'
+                    : 'text-neutral-600 hover:text-neutral-900'
                 }`}
               >
                 Videos ({videos.length})
               </button>
               <button
                 onClick={() => setCurrentSelection('photos')}
-                className={`px-6 py-2 rounded-full font-medium transition-all duration-200 ${
+                className={`px-8 py-3 rounded-xl font-semibold transition-all duration-350 ${
                   currentSelection === 'photos'
-                    ? 'bg-btc text-white shadow-md'
-                    : 'text-gray-700 hover:text-gray-900'
+                    ? 'bg-white text-neutral-900 shadow-subtle'
+                    : 'text-neutral-600 hover:text-neutral-900'
                 }`}
               >
                 Photos ({photos.length})

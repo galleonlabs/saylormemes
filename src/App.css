@@ -1,55 +1,64 @@
-/* Custom styles for SaylorMemes app */
+/* Modern SaylorMemes styles */
 
-/* Custom video player styles */
-video::-webkit-media-controls-timeline {
-  cursor: pointer;
+/* Video player enhancements */
+video {
+  @apply rounded-xl;
 }
 
-/* Loading spinner */
+video::-webkit-media-controls-panel {
+  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+}
+
+/* Modern loading spinner */
 .spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid #f3f4f6;
-  border-top-color: #FF9900;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+  @apply w-12 h-12 relative;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.spinner::before {
+  content: '';
+  @apply absolute inset-0 border-4 border-neutral-200 rounded-full;
 }
 
-/* Custom scrollbar */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+.spinner::after {
+  content: '';
+  @apply absolute inset-0 border-4 border-transparent border-t-btc rounded-full animate-spin;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+/* Custom scrollbar for containers */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: theme('colors.btc.light') theme('colors.neutral.100');
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #FF9900;
-  border-radius: 10px;
+/* Glass morphism effect */
+.glass {
+  @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-elevated;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #e68a00;
+/* Hover lift effect */
+.hover-lift {
+  @apply transition-all duration-350 hover:-translate-y-1 hover:shadow-elevated;
 }
 
-/* Shimmer loading effect */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.shimmer {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+/* Skeleton loading */
+.skeleton {
+  @apply bg-neutral-200 rounded-lg animate-shimmer;
+  background: linear-gradient(90deg, 
+    theme('colors.neutral.200') 25%, 
+    theme('colors.neutral.100') 50%, 
+    theme('colors.neutral.200') 75%
+  );
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+}
+
+/* Tag pill styles */
+.tag-pill {
+  @apply inline-flex items-center px-3 py-1 text-xs font-medium rounded-full
+    bg-neutral-100 text-neutral-700 transition-colors duration-250
+    hover:bg-btc-muted hover:text-btc-dark;
+}
+
+/* Empty state illustration */
+.empty-state-icon {
+  @apply w-24 h-24 mx-auto mb-4 text-neutral-300;
 }
