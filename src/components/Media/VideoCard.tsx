@@ -19,6 +19,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
   const [isEnlarged, setIsEnlarged] = useState(false);
   const [isLoadingVideo, setIsLoadingVideo] = useState(false);
   const [error, setError] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -90,7 +91,6 @@ export const VideoCard: React.FC<VideoCardProps> = ({
       setIsLoadingVideo(false);
     }
     
-    // Wait for video element to be ready
     setTimeout(() => {
       if (videoRef.current && videoRef.current.requestFullscreen) {
         videoRef.current.requestFullscreen();
@@ -101,27 +101,29 @@ export const VideoCard: React.FC<VideoCardProps> = ({
   return (
     <>
       <div
-        className={`staggered-item card hover-lift ${
-          isEnlarged ? 'hidden' : ''
-        }`}
+        className={`stagger-item card-modern group ${isEnlarged ? 'hidden' : ''}`}
         style={{ animationDelay: `${index * 50}ms` }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="aspect-video relative bg-neutral-900 rounded-t-2xl overflow-hidden group">
+        <div className="aspect-video relative bg-dark-100 rounded-t-xl overflow-hidden">
           {!video.videoUrl ? (
             <>
               <img
                 src={video.thumbnailUrl}
                 alt={`${video.title} thumbnail`}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              
               <button
                 onClick={handlePlayClick}
                 disabled={isLoadingVideo}
-                className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px] transition-all duration-350 group-hover:bg-black/30 group-hover:backdrop-blur-sm"
+                className="absolute inset-0 flex items-center justify-center"
                 aria-label={`Play ${video.title}`}
               >
                 {isLoadingVideo ? (
-                  <div className="spinner" />
+                  <div className="spinner-modern w-12 h-12" />
                 ) : error ? (
                   <div className="text-white text-center p-4 animate-fade-in">
                     <p className="mb-3 text-sm font-medium">Failed to load video</p>
@@ -130,16 +132,21 @@ export const VideoCard: React.FC<VideoCardProps> = ({
                         e.stopPropagation();
                         handlePlayClick();
                       }}
-                      className="px-4 py-2 bg-btc text-white text-sm font-medium rounded-lg hover:bg-btc-dark transition-colors"
+                      className="btn-primary text-sm"
                     >
                       Retry
                     </button>
                   </div>
                 ) : (
-                  <div className="w-20 h-20 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center transition-transform duration-250 group-hover:scale-110">
-                    <svg className="w-8 h-8 text-neutral-900 ml-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                    </svg>
+                  <div className={`relative ${isHovered ? 'animate-pulse' : ''}`}>
+                    <div className="w-20 h-20 rounded-full bg-btc/90 backdrop-blur-sm flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-glow-lg">
+                      <svg className="w-8 h-8 text-dark ml-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                      </svg>
+                    </div>
+                    {isHovered && (
+                      <div className="absolute inset-0 rounded-full bg-btc/30 blur-xl animate-glow"></div>
+                    )}
                   </div>
                 )}
               </button>
@@ -148,7 +155,7 @@ export const VideoCard: React.FC<VideoCardProps> = ({
             <video
               ref={videoRef}
               src={video.videoUrl}
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain bg-black"
               controls
               playsInline
               onClick={(e) => e.stopPropagation()}
@@ -158,28 +165,25 @@ export const VideoCard: React.FC<VideoCardProps> = ({
         </div>
 
         <div className="p-5">
-          <h3 className="font-semibold text-neutral-900 mb-3 line-clamp-2 text-balance">{video.title}</h3>
+          <h3 className="font-semibold text-white mb-3 line-clamp-2">{video.title}</h3>
 
           {video.tags && video.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
               {video.tags.map((tag, tagIndex) => (
-                <span
-                  key={tagIndex}
-                  className="tag-pill"
-                >
+                <span key={tagIndex} className="tag-modern">
                   {tag}
                 </span>
               ))}
             </div>
           )}
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <button
               onClick={handleEnlarge}
               disabled={isLoadingVideo}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-neutral-100 text-neutral-700 rounded-lg transition-all duration-250 hover:bg-neutral-200 hover:shadow-subtle active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-ghost text-sm"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
               </svg>
               Enlarge
@@ -187,43 +191,57 @@ export const VideoCard: React.FC<VideoCardProps> = ({
             <button
               onClick={handleFullscreen}
               disabled={isLoadingVideo}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-neutral-100 text-neutral-700 rounded-lg transition-all duration-250 hover:bg-neutral-200 hover:shadow-subtle active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-ghost text-sm"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
               </svg>
-              Fullscreen
             </button>
           </div>
         </div>
       </div>
 
       {isEnlarged && (
-        <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="relative w-full max-w-4xl">
+        <div className="fixed inset-0 bg-dark-overlay backdrop-blur-xl flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="relative w-full max-w-5xl">
             <button
               onClick={handleEnlarge}
-              className="absolute -top-12 right-0 text-white/80 hover:text-white transition-colors p-2 rounded-full hover:bg-white/10"
-              aria-label="Close enlarged view"
+              className="absolute -top-14 right-0 text-white/60 hover:text-white transition-colors p-3 rounded-full hover:bg-white/10"
+              aria-label="Close"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            {video.videoUrl ? (
-              <video
-                src={video.videoUrl}
-                className="w-full rounded-xl shadow-elevated"
-                controls
-                autoPlay
-                playsInline
-              />
-            ) : (
-              <div className="flex items-center justify-center h-96">
-                <div className="spinner" />
-              </div>
-            )}
-            <p className="text-white text-center mt-4 text-lg font-medium animate-slide-up">{video.title}</p>
+            
+            <div className="glass rounded-2xl overflow-hidden">
+              {video.videoUrl ? (
+                <video
+                  src={video.videoUrl}
+                  className="w-full rounded-2xl"
+                  controls
+                  autoPlay
+                  playsInline
+                />
+              ) : (
+                <div className="flex items-center justify-center h-96">
+                  <div className="spinner-modern w-16 h-16" />
+                </div>
+              )}
+            </div>
+            
+            <div className="mt-6 text-center animate-slide-in-up">
+              <h3 className="text-2xl font-bold text-white mb-2">{video.title}</h3>
+              {video.tags && video.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {video.tags.map((tag, tagIndex) => (
+                    <span key={tagIndex} className="tag-modern">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

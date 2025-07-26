@@ -1,10 +1,8 @@
 import './App.css';
 import saylor from './assets/saylor.jpg';
 import btc from './assets/btc.png';
-import { useState, useEffect } from 'react';
-import { TwitterShareButton, FacebookShareButton, TwitterIcon, FacebookIcon, WhatsappIcon, WhatsappShareButton } from 'react-share';
+import { useState, useEffect, useRef } from 'react';
 import { 
-  Header, 
   Footer, 
   MediaGrid, 
   SearchBar, 
@@ -21,6 +19,8 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [enlargedPhoto, setEnlargedPhoto] = useState<Photo | null>(null);
+  const [isNavVisible, setIsNavVisible] = useState(true);
+  const lastScrollY = useRef(0);
   
   const { videos, photos, isLoading, loadVideoUrl, setVideos } = useFirebaseStorage();
   const { filteredContent, availableTags } = useMediaFiltering(
@@ -31,6 +31,18 @@ function App() {
     activeFilter
   );
   const { logAnalyticsEvent } = useAnalytics();
+
+  // Hide/show navigation on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      setIsNavVisible(currentScrollY < lastScrollY.current || currentScrollY < 50);
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     if (currentSelection === 'videos') {
@@ -68,111 +80,135 @@ function App() {
     });
   };
 
-  const shareUrl = 'https://saylormemes.com';
-  const shareTitle = 'Check out the ultimate collection of Michael Saylor memes!';
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-elevated p-6 sm:p-10 animate-fade-in">
-          {/* Hero Section */}
-          <div className="text-center mb-10">
-            <div className="flex justify-center items-center -space-x-6 mb-8">
-              <img
-                className="relative z-20 h-24 w-24 sm:h-32 sm:w-32 rounded-full ring-4 ring-white shadow-elevated transform transition-transform duration-500 hover:scale-105"
-                src={saylor}
-                alt="Michael Saylor"
-                loading="eager"
-              />
-              <img
-                className="relative z-10 h-24 w-24 sm:h-32 sm:w-32 rounded-full ring-4 ring-white shadow-elevated animate-bounce-slow"
-                src={btc}
-                alt="Bitcoin"
-                loading="eager"
-              />
-            </div>
-            
-            <Header />
-            
-            {/* Social Sharing */}
-            <div className="flex justify-center gap-3 mt-6">
-              <TwitterShareButton url={shareUrl} title={shareTitle}>
-                <div className="flex items-center gap-2 px-5 py-2.5 bg-neutral-100 rounded-xl transition-all duration-250 hover:bg-neutral-200 hover:shadow-subtle hover:-translate-y-0.5 active:scale-95">
-                  <TwitterIcon size={20} round />
-                  <span className="text-sm font-medium text-neutral-700">Share</span>
-                </div>
-              </TwitterShareButton>
-              <FacebookShareButton url={shareUrl} title={shareTitle}>
-                <div className="flex items-center gap-2 px-5 py-2.5 bg-neutral-100 rounded-xl transition-all duration-250 hover:bg-neutral-200 hover:shadow-subtle hover:-translate-y-0.5 active:scale-95">
-                  <FacebookIcon size={20} round />
-                  <span className="text-sm font-medium text-neutral-700">Share</span>
-                </div>
-              </FacebookShareButton>
-              <WhatsappShareButton url={shareUrl} title={shareTitle}>
-                <div className="flex items-center gap-2 px-5 py-2.5 bg-neutral-100 rounded-xl transition-all duration-250 hover:bg-neutral-200 hover:shadow-subtle hover:-translate-y-0.5 active:scale-95">
-                  <WhatsappIcon size={20} round />
-                  <span className="text-sm font-medium text-neutral-700">Share</span>
-                </div>
-              </WhatsappShareButton>
-            </div>
-          </div>
-
-          {/* Media Type Selector */}
-          <div className="flex justify-center mb-10 mt-10">
-            <div className="inline-flex rounded-2xl bg-neutral-100 p-1.5">
-              <button
-                onClick={() => setCurrentSelection('videos')}
-                className={`px-8 py-3 rounded-xl font-semibold transition-all duration-350 ${
-                  currentSelection === 'videos'
-                    ? 'bg-white text-neutral-900 shadow-subtle'
-                    : 'text-neutral-600 hover:text-neutral-900'
-                }`}
-              >
-                Videos ({videos.length})
-              </button>
-              <button
-                onClick={() => setCurrentSelection('photos')}
-                className={`px-8 py-3 rounded-xl font-semibold transition-all duration-350 ${
-                  currentSelection === 'photos'
-                    ? 'bg-white text-neutral-900 shadow-subtle'
-                    : 'text-neutral-600 hover:text-neutral-900'
-                }`}
-              >
-                Photos ({photos.length})
-              </button>
-            </div>
-          </div>
-
-          {/* Search and Filters */}
-          <div className="max-w-2xl mx-auto mb-8 space-y-4">
-            <SearchBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
-            <TagFilter 
-              availableTags={availableTags} 
-              activeFilter={activeFilter} 
-              onFilterChange={setActiveFilter} 
-            />
-          </div>
-
-          {/* Content Area */}
-          {isLoading ? (
-            <LoadingSpinner />
-          ) : filteredContent.length === 0 ? (
-            <EmptyState searchQuery={searchQuery} activeFilter={activeFilter} />
-          ) : (
-            <MediaGrid
-              mediaType={currentSelection}
-              videos={filteredContent as any}
-              photos={filteredContent as any}
-              onLoadVideo={loadVideoUrl}
-              onTogglePlay={handleTogglePlay}
-              onEnlargePhoto={handleEnlargePhoto}
-              logAnalyticsEvent={logAnalyticsEvent}
-            />
-          )}
-
-          <Footer />
-        </div>
+    <div className="min-h-screen bg-dark relative overflow-x-hidden">
+      {/* Background effects */}
+      <div className="fixed inset-0 opacity-30">
+        <div className="absolute inset-0 bg-gradient-radial from-btc/20 via-transparent to-transparent"></div>
+        <div className="absolute inset-0 bg-grid-pattern bg-grid-32 opacity-10"></div>
       </div>
+
+      {/* Floating navigation header */}
+      <header className={`fixed top-0 left-0 right-0 z-40 transition-transform duration-300 ${
+        isNavVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}>
+        <div className="glass border-b border-white/10 backdrop-blur-xl">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              {/* Logo/Brand */}
+              <div className="flex items-center space-x-3">
+                <div className="relative">
+                  <img
+                    className="h-10 w-10 rounded-full shadow-glow animate-float"
+                    src={saylor}
+                    alt="Saylor"
+                  />
+                  <div className="absolute -bottom-1 -right-1 h-5 w-5">
+                    <img
+                      className="h-full w-full rounded-full shadow-glow-sm"
+                      src={btc}
+                      alt="BTC"
+                    />
+                  </div>
+                </div>
+                <h1 className="text-xl font-bold gradient-text bg-gradient-to-r from-btc via-btc-bright to-accent-cyber">
+                  SaylorMemes
+                </h1>
+              </div>
+
+              {/* Media type toggle */}
+              <div className="flex items-center space-x-2 bg-dark-elevated rounded-full p-1">
+                <button
+                  onClick={() => setCurrentSelection('videos')}
+                  className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
+                    currentSelection === 'videos'
+                      ? 'bg-btc text-dark shadow-glow'
+                      : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  Videos
+                </button>
+                <button
+                  onClick={() => setCurrentSelection('photos')}
+                  className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
+                    currentSelection === 'photos'
+                      ? 'bg-btc text-dark shadow-glow'
+                      : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  Photos
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main content */}
+      <main className="relative z-10 pt-24 pb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Hero section */}
+          <div className="text-center mb-12 animate-slide-in-up">
+            <div className="mb-8">
+              <h2 className="text-4xl sm:text-6xl font-bold mb-4">
+                <span className="gradient-text bg-gradient-to-r from-btc via-accent-electric to-accent-neon">
+                  Michael Saylor
+                </span>
+              </h2>
+              <p className="text-xl text-white/60 font-light">
+                The ultimate collection of Bitcoin wisdom in meme form
+              </p>
+            </div>
+
+            {/* Search and filters */}
+            <div className="max-w-2xl mx-auto space-y-4">
+              <SearchBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+              {availableTags.length > 1 && (
+                <TagFilter 
+                  availableTags={availableTags} 
+                  activeFilter={activeFilter} 
+                  onFilterChange={setActiveFilter} 
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Content area */}
+          <div className="relative">
+            {isLoading ? (
+              <LoadingSpinner />
+            ) : filteredContent.length === 0 ? (
+              <EmptyState searchQuery={searchQuery} activeFilter={activeFilter} />
+            ) : (
+              <MediaGrid
+                mediaType={currentSelection}
+                videos={filteredContent as any}
+                photos={filteredContent as any}
+                onLoadVideo={loadVideoUrl}
+                onTogglePlay={handleTogglePlay}
+                onEnlargePhoto={handleEnlargePhoto}
+                logAnalyticsEvent={logAnalyticsEvent}
+              />
+            )}
+          </div>
+        </div>
+      </main>
+
+      {/* Floating action buttons */}
+      <div className="fixed bottom-8 right-8 z-30 flex flex-col gap-3">
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="btn-primary rounded-full p-4 shadow-float"
+          aria-label="Scroll to top"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Footer */}
+      <Footer />
 
       {/* Photo Modal */}
       <PhotoModal photo={enlargedPhoto} onClose={() => setEnlargedPhoto(null)} />

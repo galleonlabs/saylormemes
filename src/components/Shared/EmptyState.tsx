@@ -7,18 +7,18 @@ interface EmptyStateProps {
 
 export const EmptyState: React.FC<EmptyStateProps> = ({ searchQuery, activeFilter }) => {
   return (
-    <div className="text-center py-16 animate-fade-in">
+    <div className="empty-state animate-slide-in-up">
       <div className="empty-state-icon">
-        <svg fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+        <svg fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       </div>
-      <p className="text-neutral-600 text-lg font-semibold">
-        No results found
-        {searchQuery && <span className="text-neutral-900"> for "{searchQuery}"</span>}
-        {activeFilter && activeFilter !== 'all' && <span className="text-neutral-900"> with tag "{activeFilter}"</span>}
+      <p className="text-white/80 text-xl font-semibold">
+        No memes found
+        {searchQuery && <span className="text-btc"> for "{searchQuery}"</span>}
+        {activeFilter && activeFilter !== 'all' && <span className="text-btc"> tagged "{activeFilter}"</span>}
       </p>
-      <p className="text-neutral-500 mt-2 font-medium">
+      <p className="text-white/40 mt-3 font-light">
         Try adjusting your search or filters
       </p>
     </div>

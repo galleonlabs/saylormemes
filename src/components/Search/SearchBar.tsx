@@ -13,16 +13,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({ searchQuery, onSearchChang
         placeholder="Search memes..."
         value={searchQuery}
         onChange={(e) => onSearchChange(e.target.value)}
-        className="w-full px-6 py-3.5 pl-12 pr-6 rounded-2xl bg-neutral-100 border border-transparent 
-          placeholder:text-neutral-500 text-neutral-900 font-medium
-          transition-all duration-350 
-          hover:bg-neutral-50 hover:border-neutral-200 hover:shadow-subtle
-          focus:bg-white focus:border-btc-light focus:shadow-card focus:outline-none"
+        className="input-modern w-full pl-12 pr-12"
         aria-label="Search memes"
       />
       <svg
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400 
-          transition-colors duration-350 group-focus-within:text-btc"
+        className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40 
+          transition-colors duration-300 group-focus-within:text-btc"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
@@ -37,9 +33,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({ searchQuery, onSearchChang
       {searchQuery && (
         <button
           onClick={() => onSearchChange('')}
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 p-1 rounded-lg
-            text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100
-            transition-all duration-250 animate-scale-in"
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-lg
+            text-white/40 hover:text-white hover:bg-white/10
+            transition-all duration-300 animate-scale-in"
           aria-label="Clear search"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

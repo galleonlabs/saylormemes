@@ -1,64 +1,213 @@
-/* Modern SaylorMemes styles */
+/* Modern dark theme app styles */
 
-/* Video player enhancements */
-video {
-  @apply rounded-xl;
-}
-
-video::-webkit-media-controls-panel {
-  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
-}
-
-/* Modern loading spinner */
-.spinner {
-  @apply w-12 h-12 relative;
-}
-
-.spinner::before {
-  content: '';
-  @apply absolute inset-0 border-4 border-neutral-200 rounded-full;
-}
-
-.spinner::after {
-  content: '';
-  @apply absolute inset-0 border-4 border-transparent border-t-btc rounded-full animate-spin;
-}
-
-/* Custom scrollbar for containers */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: theme('colors.btc.light') theme('colors.neutral.100');
-}
-
-/* Glass morphism effect */
+/* Glass morphism components */
 .glass {
-  @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-elevated;
+  @apply backdrop-blur-lg bg-white/5 border border-white/10;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+.glass-dark {
+  @apply backdrop-blur-lg bg-black/20 border border-white/5;
+}
+
+/* Modern card styles */
+.card-modern {
+  @apply relative overflow-hidden rounded-2xl bg-dark-elevated border border-dark-200;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-modern::before {
+  content: '';
+  @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 149, 0, 0.15) 0%, transparent 50%);
+}
+
+.card-modern:hover::before {
+  @apply opacity-100;
+}
+
+.card-modern:hover {
+  @apply border-btc/30 shadow-glow scale-[1.02];
+  transform: translateY(-4px) scale(1.02);
+}
+
+/* Neon text effects */
+.neon-text {
+  @apply font-bold tracking-wider;
+  text-shadow: 
+    0 0 10px currentColor,
+    0 0 20px currentColor,
+    0 0 40px currentColor,
+    0 0 80px currentColor;
+}
+
+/* Modern buttons */
+.btn-primary {
+  @apply relative px-6 py-3 font-semibold bg-btc text-dark rounded-xl overflow-hidden transition-all duration-300;
+  box-shadow: 0 0 20px rgba(255, 149, 0, 0.3);
+}
+
+.btn-primary::before {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full;
+  transition: transform 0.6s;
+}
+
+.btn-primary:hover::before {
+  transform: translateX(100%);
+}
+
+.btn-primary:hover {
+  @apply scale-105 shadow-glow-lg;
+}
+
+.btn-ghost {
+  @apply px-6 py-3 font-medium text-white/80 border border-white/10 rounded-xl backdrop-blur-sm transition-all duration-300;
+}
+
+.btn-ghost:hover {
+  @apply text-white bg-white/10 border-white/20 shadow-lg;
+}
+
+/* Input styles */
+.input-modern {
+  @apply w-full px-6 py-4 bg-dark-elevated border border-dark-200 rounded-xl text-white placeholder-white/40 transition-all duration-300;
+}
+
+.input-modern:focus {
+  @apply border-btc/50 shadow-glow outline-none;
+  background: rgba(255, 149, 0, 0.05);
+}
+
+/* Tag pills */
+.tag-modern {
+  @apply inline-flex items-center px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-300;
+  @apply bg-white/5 text-white/70 border border-white/10 backdrop-blur-sm;
+}
+
+.tag-modern:hover {
+  @apply bg-white/10 text-white border-white/20 scale-105;
+}
+
+.tag-modern.active {
+  @apply bg-btc text-dark border-btc;
+  box-shadow: 0 0 20px rgba(255, 149, 0, 0.5);
+}
+
+/* Loading states */
+.skeleton-dark {
+  @apply relative overflow-hidden bg-dark-200 rounded-xl;
+}
+
+.skeleton-dark::after {
+  content: '';
+  @apply absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer;
+}
+
+/* Spinner */
+.spinner-modern {
+  @apply inline-block w-5 h-5 border-2 border-white/20 border-t-btc rounded-full animate-spin;
+}
+
+/* Grid overlays */
+.grid-fade {
+  @apply relative;
+}
+
+.grid-fade::before {
+  content: '';
+  @apply absolute inset-0 pointer-events-none;
+  background: linear-gradient(to bottom, transparent 80%, rgba(10, 10, 10, 1) 100%);
 }
 
 /* Hover lift effect */
 .hover-lift {
-  @apply transition-all duration-350 hover:-translate-y-1 hover:shadow-elevated;
+  @apply transition-all duration-300 ease-out;
 }
 
-/* Skeleton loading */
-.skeleton {
-  @apply bg-neutral-200 rounded-lg animate-shimmer;
-  background: linear-gradient(90deg, 
-    theme('colors.neutral.200') 25%, 
-    theme('colors.neutral.100') 50%, 
-    theme('colors.neutral.200') 75%
-  );
-  background-size: 200% 100%;
+.hover-lift:hover {
+  transform: translateY(-8px) scale(1.02);
 }
 
-/* Tag pill styles */
-.tag-pill {
-  @apply inline-flex items-center px-3 py-1 text-xs font-medium rounded-full
-    bg-neutral-100 text-neutral-700 transition-colors duration-250
-    hover:bg-btc-muted hover:text-btc-dark;
+/* Glitch effect for text */
+.glitch {
+  @apply relative;
 }
 
-/* Empty state illustration */
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  @apply absolute top-0 left-0 w-full h-full;
+}
+
+.glitch::before {
+  animation: glitch 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+  color: #00ff88;
+  z-index: -1;
+}
+
+.glitch::after {
+  animation: glitch 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both infinite;
+  color: #ff0099;
+  z-index: -2;
+}
+
+/* Gradient borders */
+.gradient-border {
+  @apply relative;
+}
+
+.gradient-border::before {
+  content: '';
+  @apply absolute -inset-[1px] rounded-[inherit] opacity-0 transition-opacity duration-300;
+  background: linear-gradient(135deg, #ff9500, #ff0099, #00ff88, #00d9ff);
+  z-index: -1;
+}
+
+.gradient-border:hover::before {
+  @apply opacity-100;
+}
+
+/* Media player controls */
+.player-controls {
+  @apply absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent;
+}
+
+/* Empty state */
+.empty-state {
+  @apply flex flex-col items-center justify-center py-20 text-center;
+}
+
 .empty-state-icon {
-  @apply w-24 h-24 mx-auto mb-4 text-neutral-300;
+  @apply w-24 h-24 mb-6 text-white/10;
+}
+
+/* Mobile menu */
+.mobile-menu {
+  @apply fixed inset-x-0 bottom-0 bg-dark-elevated border-t border-dark-200 backdrop-blur-xl;
+  border-radius: 24px 24px 0 0;
+}
+
+/* Masonry grid */
+@supports (grid-template-rows: masonry) {
+  .masonry-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-rows: masonry;
+    gap: 1.5rem;
+  }
+}
+
+/* Fallback for browsers without masonry support */
+@supports not (grid-template-rows: masonry) {
+  .masonry-grid {
+    columns: 300px;
+    column-gap: 1.5rem;
+  }
+  
+  .masonry-grid > * {
+    break-inside: avoid;
+    margin-bottom: 1.5rem;
+  }
 }
