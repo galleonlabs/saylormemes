@@ -7,18 +7,17 @@ interface SearchBarProps {
 
 export const SearchBar: React.FC<SearchBarProps> = ({ searchQuery, onSearchChange }) => {
   return (
-    <div className="relative group">
+    <div className="relative">
       <input
         type="text"
-        placeholder="Search memes..."
+        placeholder="Search collection..."
         value={searchQuery}
         onChange={(e) => onSearchChange(e.target.value)}
-        className="input-modern w-full pl-12 pr-12"
+        className="input-text pl-10"
         aria-label="Search memes"
       />
       <svg
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40 
-          transition-colors duration-300 group-focus-within:text-btc"
+        className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-ink-lighter"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
@@ -33,9 +32,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ searchQuery, onSearchChang
       {searchQuery && (
         <button
           onClick={() => onSearchChange('')}
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-lg
-            text-white/40 hover:text-white hover:bg-white/10
-            transition-all duration-300 animate-scale-in"
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-ink-lighter hover:text-ink transition-colors"
           aria-label="Clear search"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

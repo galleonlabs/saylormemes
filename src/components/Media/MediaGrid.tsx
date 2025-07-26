@@ -23,7 +23,7 @@ export const MediaGrid: React.FC<MediaGridProps> = ({
   logAnalyticsEvent,
 }) => {
   return (
-    <div className="masonry-grid">
+    <div className="space-y-0">
       {mediaType === 'videos' ? (
         videos.map((video, index) => (
           <VideoCard

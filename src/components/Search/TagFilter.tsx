@@ -8,10 +8,10 @@ interface TagFilterProps {
 
 export const TagFilter: React.FC<TagFilterProps> = ({ availableTags, activeFilter, onFilterChange }) => {
   return (
-    <div className="flex flex-wrap gap-2 justify-center">
+    <div className="flex flex-wrap gap-2">
       <button
         onClick={() => onFilterChange('all')}
-        className={`tag-modern ${activeFilter === 'all' ? 'active' : ''}`}
+        className={`tag ${activeFilter === 'all' ? 'tag-active' : ''}`}
         aria-pressed={activeFilter === 'all'}
       >
         All
@@ -20,7 +20,7 @@ export const TagFilter: React.FC<TagFilterProps> = ({ availableTags, activeFilte
         <button
           key={tag}
           onClick={() => onFilterChange(tag)}
-          className={`tag-modern ${activeFilter === tag ? 'active' : ''}`}
+          className={`tag ${activeFilter === tag ? 'tag-active' : ''}`}
           aria-pressed={activeFilter === tag}
         >
           {tag}

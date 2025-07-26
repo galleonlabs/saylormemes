@@ -1,213 +1,135 @@
-/* Modern dark theme app styles */
+/* Whitepaper theme styles */
 
-/* Glass morphism components */
-.glass {
-  @apply backdrop-blur-lg bg-white/5 border border-white/10;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+/* Media item styles */
+.media-item {
+  @apply border-t border-ink/10 py-4 first:border-t-0;
 }
 
-.glass-dark {
-  @apply backdrop-blur-lg bg-black/20 border border-white/5;
+.media-item-number {
+  @apply text-footnote text-ink-lighter font-mono mr-4;
 }
 
-/* Modern card styles */
-.card-modern {
-  @apply relative overflow-hidden rounded-2xl bg-dark-elevated border border-dark-200;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+.media-item-content {
+  @apply flex-1;
 }
 
-.card-modern::before {
-  content: '';
-  @apply absolute inset-0 opacity-0 transition-opacity duration-300;
-  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 149, 0, 0.15) 0%, transparent 50%);
+.media-item-title {
+  @apply font-serif text-body text-ink mb-1;
 }
 
-.card-modern:hover::before {
-  @apply opacity-100;
+.media-item-meta {
+  @apply text-footnote text-ink-lighter;
 }
 
-.card-modern:hover {
-  @apply border-btc/30 shadow-glow scale-[1.02];
-  transform: translateY(-4px) scale(1.02);
+/* Figure styles */
+.figure {
+  @apply my-8;
 }
 
-/* Neon text effects */
-.neon-text {
-  @apply font-bold tracking-wider;
-  text-shadow: 
-    0 0 10px currentColor,
-    0 0 20px currentColor,
-    0 0 40px currentColor,
-    0 0 80px currentColor;
+.figure-content {
+  @apply border border-ink/10 p-1 bg-paper-light;
 }
 
-/* Modern buttons */
-.btn-primary {
-  @apply relative px-6 py-3 font-semibold bg-btc text-dark rounded-xl overflow-hidden transition-all duration-300;
-  box-shadow: 0 0 20px rgba(255, 149, 0, 0.3);
+.figure-caption {
+  @apply text-citation text-ink-lighter mt-2 text-center;
 }
 
-.btn-primary::before {
-  content: '';
-  @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full;
-  transition: transform 0.6s;
+/* Table of contents */
+.toc {
+  @apply border-l-2 border-btc pl-4 py-2 my-8;
 }
 
-.btn-primary:hover::before {
-  transform: translateX(100%);
+.toc-item {
+  @apply text-body text-ink mb-2 last:mb-0;
 }
 
-.btn-primary:hover {
-  @apply scale-105 shadow-glow-lg;
+.toc-item:hover {
+  @apply text-btc;
 }
 
-.btn-ghost {
-  @apply px-6 py-3 font-medium text-white/80 border border-white/10 rounded-xl backdrop-blur-sm transition-all duration-300;
+/* Index styles */
+.index-letter {
+  @apply font-serif text-title text-ink mt-8 mb-4 border-b border-ink/10 pb-2;
 }
 
-.btn-ghost:hover {
-  @apply text-white bg-white/10 border-white/20 shadow-lg;
+.index-entries {
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-2 mb-8;
 }
 
-/* Input styles */
-.input-modern {
-  @apply w-full px-6 py-4 bg-dark-elevated border border-dark-200 rounded-xl text-white placeholder-white/40 transition-all duration-300;
+.index-entry {
+  @apply text-body text-ink-light;
 }
 
-.input-modern:focus {
-  @apply border-btc/50 shadow-glow outline-none;
-  background: rgba(255, 149, 0, 0.05);
+/* Video player */
+video {
+  @apply w-full bg-black;
 }
 
-/* Tag pills */
-.tag-modern {
-  @apply inline-flex items-center px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-300;
-  @apply bg-white/5 text-white/70 border border-white/10 backdrop-blur-sm;
-}
-
-.tag-modern:hover {
-  @apply bg-white/10 text-white border-white/20 scale-105;
-}
-
-.tag-modern.active {
-  @apply bg-btc text-dark border-btc;
-  box-shadow: 0 0 20px rgba(255, 149, 0, 0.5);
-}
-
-/* Loading states */
-.skeleton-dark {
-  @apply relative overflow-hidden bg-dark-200 rounded-xl;
-}
-
-.skeleton-dark::after {
-  content: '';
-  @apply absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer;
-}
-
-/* Spinner */
-.spinner-modern {
-  @apply inline-block w-5 h-5 border-2 border-white/20 border-t-btc rounded-full animate-spin;
-}
-
-/* Grid overlays */
-.grid-fade {
-  @apply relative;
-}
-
-.grid-fade::before {
-  content: '';
-  @apply absolute inset-0 pointer-events-none;
-  background: linear-gradient(to bottom, transparent 80%, rgba(10, 10, 10, 1) 100%);
-}
-
-/* Hover lift effect */
-.hover-lift {
-  @apply transition-all duration-300 ease-out;
-}
-
-.hover-lift:hover {
-  transform: translateY(-8px) scale(1.02);
-}
-
-/* Glitch effect for text */
-.glitch {
-  @apply relative;
-}
-
-.glitch::before,
-.glitch::after {
-  content: attr(data-text);
-  @apply absolute top-0 left-0 w-full h-full;
-}
-
-.glitch::before {
-  animation: glitch 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
-  color: #00ff88;
-  z-index: -1;
-}
-
-.glitch::after {
-  animation: glitch 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse both infinite;
-  color: #ff0099;
-  z-index: -2;
-}
-
-/* Gradient borders */
-.gradient-border {
-  @apply relative;
-}
-
-.gradient-border::before {
-  content: '';
-  @apply absolute -inset-[1px] rounded-[inherit] opacity-0 transition-opacity duration-300;
-  background: linear-gradient(135deg, #ff9500, #ff0099, #00ff88, #00d9ff);
-  z-index: -1;
-}
-
-.gradient-border:hover::before {
-  @apply opacity-100;
-}
-
-/* Media player controls */
-.player-controls {
-  @apply absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent;
+/* Loading skeleton */
+.skeleton {
+  @apply bg-ink/5 animate-pulse;
 }
 
 /* Empty state */
 .empty-state {
-  @apply flex flex-col items-center justify-center py-20 text-center;
+  @apply text-center py-16;
 }
 
-.empty-state-icon {
-  @apply w-24 h-24 mb-6 text-white/10;
+.empty-state-message {
+  @apply text-body text-ink-lighter mb-4;
 }
 
-/* Mobile menu */
-.mobile-menu {
-  @apply fixed inset-x-0 bottom-0 bg-dark-elevated border-t border-dark-200 backdrop-blur-xl;
-  border-radius: 24px 24px 0 0;
+/* Navigation tabs */
+.nav-tabs {
+  @apply flex border-b border-ink/10 mb-8;
 }
 
-/* Masonry grid */
-@supports (grid-template-rows: masonry) {
-  .masonry-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    grid-template-rows: masonry;
-    gap: 1.5rem;
-  }
+.nav-tab {
+  @apply px-4 py-2 text-body text-ink-light border-b-2 border-transparent transition-colors;
+  @apply hover:text-ink hover:border-ink/20;
 }
 
-/* Fallback for browsers without masonry support */
-@supports not (grid-template-rows: masonry) {
-  .masonry-grid {
-    columns: 300px;
-    column-gap: 1.5rem;
-  }
-  
-  .masonry-grid > * {
-    break-inside: avoid;
-    margin-bottom: 1.5rem;
-  }
+.nav-tab.active {
+  @apply text-ink border-btc;
+}
+
+/* Pagination */
+.pagination {
+  @apply flex items-center justify-center space-x-2 mt-12;
+}
+
+.page-number {
+  @apply px-3 py-1 text-footnote text-ink-light border border-ink/10 rounded;
+  @apply hover:border-ink/20 hover:bg-ink/5;
+}
+
+.page-number.active {
+  @apply bg-btc text-paper border-btc;
+}
+
+/* Footnote references */
+.footnote-ref {
+  @apply text-footnote align-super text-btc;
+}
+
+/* Citation blocks */
+.citation-block {
+  @apply border-l-2 border-ink/10 pl-4 my-6 italic text-ink-light;
+}
+
+/* Metadata lists */
+.metadata-list {
+  @apply space-y-1 text-footnote;
+}
+
+.metadata-item {
+  @apply flex;
+}
+
+.metadata-label {
+  @apply text-ink-lighter mr-2;
+}
+
+.metadata-value {
+  @apply text-ink;
 }
