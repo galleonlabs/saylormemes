@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Video } from '../../types';
+import { ProgressiveImage } from '../Shared/ProgressiveImage';
 
 interface VideoCardProps {
   video: Video;
@@ -85,11 +86,13 @@ export const VideoCard: React.FC<VideoCardProps> = ({
             <div className="w-32 h-20 flex-shrink-0">
               <div className="figure-content h-full">
                 {!video.videoUrl ? (
-                  <img
+                  <ProgressiveImage
                     src={video.thumbnailUrl}
                     alt={`${video.title} thumbnail`}
-                    className="w-full h-full object-cover cursor-pointer"
+                    className="w-full h-full cursor-pointer"
                     onClick={handlePlayClick}
+                    quality={8}
+                    placeholderBlur={3}
                   />
                 ) : (
                   <video

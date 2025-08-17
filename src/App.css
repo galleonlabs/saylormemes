@@ -70,6 +70,19 @@ video {
   @apply bg-ink/5 animate-pulse;
 }
 
+/* Progressive image styles */
+.progressive-image-container {
+  @apply relative overflow-hidden;
+}
+
+.progressive-image-placeholder {
+  @apply absolute inset-0 w-full h-full object-cover transition-opacity duration-300;
+}
+
+.progressive-image-main {
+  @apply w-full h-full object-cover transition-opacity duration-500;
+}
+
 /* Empty state */
 .empty-state {
   @apply text-center py-16;

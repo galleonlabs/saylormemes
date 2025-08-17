@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Photo } from '../../types';
+import { ProgressiveImage } from '../Shared/ProgressiveImage';
 
 interface PhotoModalProps {
   photo: Photo | null;
@@ -41,10 +42,12 @@ export const PhotoModal: React.FC<PhotoModalProps> = ({ photo, onClose }) => {
         
         <div className="figure">
           <div className="figure-content">
-            <img
+            <ProgressiveImage
               src={photo.url}
               alt={photo.title}
               className="max-w-full max-h-[80vh] object-contain"
+              quality={12}
+              placeholderBlur={6}
             />
           </div>
           <p className="figure-caption">{photo.title}</p>
