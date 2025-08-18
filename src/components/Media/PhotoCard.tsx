@@ -1,5 +1,6 @@
 import React from 'react';
 import { Photo } from '../../types';
+import { ProgressiveImage } from '../Shared/ProgressiveImage';
 
 interface PhotoCardProps {
   photo: Photo;
@@ -16,11 +17,13 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({ photo, index, onEnlarge })
         <div className="flex items-start gap-4">
           <div className="w-32 h-20 flex-shrink-0">
             <div className="figure-content h-full">
-              <img
+              <ProgressiveImage
                 src={photo.url}
                 alt={photo.title}
-                className="w-full h-full object-cover cursor-pointer"
+                className="w-full h-full cursor-pointer"
                 onClick={() => onEnlarge(photo)}
+                quality={8}
+                placeholderBlur={3}
               />
             </div>
           </div>

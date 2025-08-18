@@ -17,3 +17,4 @@ export { PhotoModal } from './Modal/PhotoModal';
 // Shared components
 export { LoadingSpinner } from './Shared/LoadingSpinner';
 export { EmptyState } from './Shared/EmptyState';
+export { ProgressiveImage } from './Shared/ProgressiveImage';
