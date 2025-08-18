@@ -109,10 +109,10 @@ describe('useFirebaseStorage', () => {
   });
 
   it('should fetch videos and photos from Firebase when no cache', async () => {
-    mockRef.mockReturnValue({});
+    mockRef.mockReturnValue({} as any);
     mockListAll
-      .mockResolvedValueOnce({ items: mockVideoItems })
-      .mockResolvedValueOnce({ items: mockPhotoItems });
+      .mockResolvedValueOnce({ items: mockVideoItems as any[], prefixes: [] } as any)
+      .mockResolvedValueOnce({ items: mockPhotoItems as any[], prefixes: [] } as any);
     
     mockGetDownloadURL
       .mockResolvedValueOnce('thumbnail1.png')
@@ -121,10 +121,10 @@ describe('useFirebaseStorage', () => {
       .mockResolvedValueOnce('photo2.png');
 
     mockGetMetadata
-      .mockResolvedValueOnce(mockVideoMetadata)
-      .mockResolvedValueOnce(mockVideoMetadata)
-      .mockResolvedValueOnce(mockPhotoMetadata)
-      .mockResolvedValueOnce(mockPhotoMetadata);
+      .mockResolvedValueOnce(mockVideoMetadata as any)
+      .mockResolvedValueOnce(mockVideoMetadata as any)
+      .mockResolvedValueOnce(mockPhotoMetadata as any)
+      .mockResolvedValueOnce(mockPhotoMetadata as any);
 
     const { result } = renderHook(() => useFirebaseStorage());
 
@@ -139,7 +139,7 @@ describe('useFirebaseStorage', () => {
   });
 
   it('should handle errors when fetching from Firebase', async () => {
-    mockRef.mockReturnValue({});
+    mockRef.mockReturnValue({} as any);
     mockListAll.mockRejectedValueOnce(new Error('Firebase error'));
 
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -188,7 +188,7 @@ describe('useFirebaseStorage', () => {
   });
 
   it('should filter out non-MP4 files when fetching videos', async () => {
-    mockRef.mockReturnValue({});
+    mockRef.mockReturnValue({} as any);
     mockListAll.mockResolvedValueOnce({ items: mockVideoItems });
 
     mockGetDownloadURL
@@ -213,7 +213,7 @@ describe('useFirebaseStorage', () => {
   it('should handle missing metadata gracefully', async () => {
     const itemsWithoutMetadata = [{ name: 'video1.mp4' }];
     
-    mockRef.mockReturnValue({});
+    mockRef.mockReturnValue({} as any);
     mockListAll
       .mockResolvedValueOnce({ items: itemsWithoutMetadata })
       .mockResolvedValueOnce({ items: [] });

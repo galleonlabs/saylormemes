@@ -1,5 +1,4 @@
-import React from 'react';
-import { render, screen } from '../../../test/test-utils';
+import { render } from '../../../test/test-utils';
 import { describe, it, expect } from 'vitest';
 import { LoadingSpinner } from '../LoadingSpinner';
 
@@ -32,7 +31,7 @@ describe('LoadingSpinner', () => {
     const outerDiv = container.firstChild;
     const loadingDots = container.querySelector('.loading-dots');
     
-    expect(outerDiv).toContainElement(loadingDots);
+    expect(outerDiv).toContainElement(loadingDots as HTMLElement);
     expect(loadingDots).toBeInTheDocument();
   });
 

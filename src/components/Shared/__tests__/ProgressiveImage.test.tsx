@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
 import { ProgressiveImage } from '../ProgressiveImage';
@@ -78,10 +77,9 @@ describe('ProgressiveImage', () => {
 
   it('should handle image load event', async () => {
     // Mock IntersectionObserver to immediately trigger
-    const mockObserve = vi.fn();
     const mockDisconnect = vi.fn();
     mockIntersectionObserver.mockReturnValue({
-      observe: (target: Element) => {
+      observe: () => {
         // Immediately trigger intersection
         const callback = mockIntersectionObserver.mock.calls[0][0];
         callback([{ isIntersecting: true }]);

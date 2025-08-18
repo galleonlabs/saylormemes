@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, fireEvent } from '../../../test/test-utils';
 import { describe, it, expect, vi } from 'vitest';
 import { SearchBar } from '../SearchBar';
